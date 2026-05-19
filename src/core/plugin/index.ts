@@ -51,7 +51,7 @@ export async function loadPlugins(rootDir: string, config: AppConfig): Promise<K
       const desc = plugin.description ? " — " + plugin.description : ""
       console.log("  Plugin loaded: " + plugin.name + (plugin.version ? " v" + plugin.version : "") + desc + (cfg ? " (configured)" : ""))
     } else {
-      console.warn("  [Zorux] Plugin '" + name + "' not found (tried: npm, Zorux-plugin-" + name + ", plugins/" + name + ".ts)")
+      console.warn("  [Zorux] Plugin '" + name + "' not found (tried: npm, plugins/" + name + ".ts)")
     }
   }
 

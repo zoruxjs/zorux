@@ -304,7 +304,7 @@ export async function tryLoadModule(name: string, rootDir: string): Promise<KaiP
   // Try direct import
   for (const candidate of [
     name,
-    name.startsWith("Zorux-plugin-") ? null : "Zorux-plugin-" + name,
+    name.startsWith("kai-plugin-") ? null : "kai-plugin-" + name,
   ].filter(Boolean)) {
     try {
       const mod = await import(candidate!)
