@@ -6,6 +6,7 @@ const OUT = join(import.meta.dir, "../dist")
 const BASE = `http://localhost:${PORT}`
 const ROOT = join(import.meta.dir, "..")
 const KAI = join(ROOT, "..")
+const PAGES_BASE = process.env.PAGES_BASE || ""  // e.g. "/zorux"
 
 const ROUTES: Record<string, string> = {
   "/": "index.html",
@@ -54,7 +55,17 @@ function save(path: string, html: string) {
 }
 
 function redirectHtml(url: string): string {
-  return `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${url}"><link rel="canonical" href="${url}"></head><body><script>location.href="${url}"</script></body></html>`
+  const u = PAGES_BASE + url
+  return `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${u}"><link rel="canonical" href="${u}"></head><body><script>location.href="${u}"</script></body></html>`
+}
+
+function fixHtml(html: string): string {
+  if (!PAGES_BASE) return html
+  // Inject <base> tag after <title>
+  html = html.replace("</title>", `</title><base href="${PAGES_BASE}/">`)
+  // Fix internal absolute links
+  html = html.replace(/(href|src|action)=(["'])\//g, `$1=$2${PAGES_BASE}/`)
+  return html
 }
 
 async function main() {
@@ -69,7 +80,8 @@ async function main() {
   try {
     for (const [route, file] of Object.entries(ROUTES)) {
       const res = await fetch(`${BASE}${route}`)
-      const html = await res.text()
+      let html = await res.text()
+      html = fixHtml(html)
       save(file, html)
     }
 

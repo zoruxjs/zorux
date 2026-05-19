@@ -38,6 +38,7 @@ jobs:
         run: bun run build
         env:
           NODE_ENV: production
+          PAGES_BASE: /zorux
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
