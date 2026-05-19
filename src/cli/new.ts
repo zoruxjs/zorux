@@ -28,9 +28,9 @@ export async function newCommand(name: string, options: { api?: boolean; web?: b
   const pkg: any = {
     name,
     type: 'module',
-    scripts: { dev: 'fw dev', build: 'fw build' },
+    scripts: { dev: 'zorux dev', build: 'zorux build' },
     dependencies: {
-      Zorux: '^0.1.0',
+      zorux: 'latest',
       'drizzle-orm': '^0.33.0',
       hono: '^4.5.0',
       zod: '^3.23.0',
@@ -107,7 +107,7 @@ export async function newCommand(name: string, options: { api?: boolean; web?: b
   console.log('  \u2705 Created ' + name + ' at ' + projectDir)
   console.log('\n  Next steps:')
   console.log('    cd ' + name)
-  console.log('    fw dev\n')
+  console.log('    zorux dev\n')
 }
 
 function generateAppYaml(name: string, mode: string): string {
@@ -190,7 +190,7 @@ models:
 
 function generateSaaSExtras(projectDir: string, name: string) {
   // -- Seed data file --
-  writeFileSync(join(projectDir, "seed.ts"), `import { fw } from "Zorux"
+  writeFileSync(join(projectDir, "seed.ts"), `import { F } from "zorux"
 
 export default async function seed() {
   // Create plans
@@ -205,17 +205,14 @@ export default async function seed() {
 `)
 
   // -- Example action --
-  writeFileSync(join(projectDir, "actions", "billing.ts"), `import { sendEmail } from "Zorux/email"
+  writeFileSync(join(projectDir, "actions", "billing.ts"), `import { F } from "zorux"
 
 export const invoicePaid = {
   policy: "*",
   handler: async (c: any) => {
     const { email, amount } = await c.req.json()
-    await sendEmail({
-      to: email,
-      subject: "Payment received",
-      text: \`Thank you! We received \${amount}.\`,
-    })
+    // Send email via your provider
+    console.log(\`Invoice \${amount} paid by \${email}\`)
     return c.json({ success: true })
   },
 }
