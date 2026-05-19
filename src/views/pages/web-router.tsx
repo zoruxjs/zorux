@@ -40,6 +40,17 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
     }
   })
 
+  app.get("/static/admin.css", (c) => {
+    const cssPath = join(staticDir, "admin.css")
+    if (existsSync(cssPath)) {
+      return c.text(readFileSync(cssPath, "utf-8"), 200, {
+        "Content-Type": "text/css; charset=utf-8",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      })
+    }
+    return c.text("", 404)
+  })
+
   app.get("/static/daisyui.min.css", (c) => {
     const cssPath = join(staticDir, "daisyui.min.css")
     if (existsSync(cssPath)) {
