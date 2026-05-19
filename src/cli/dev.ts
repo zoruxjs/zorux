@@ -6,7 +6,10 @@ let currentApp: AppInstance | null = null
 let restartTimer: ReturnType<typeof setTimeout> | null = null
 
 function createWatcher(rootDir: string, port: number) {
-  if (typeof Bun === "undefined") return
+  if (typeof Bun === "undefined" || typeof Bun.watch !== "function") {
+    console.log("  (file watching unavailable — restart manually to apply changes)")
+    return
+  }
 
   const watchedDirs = [
     rootDir,
