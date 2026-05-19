@@ -1,0 +1,1157 @@
+# ZORUX FRAMEWORK — LLM REFERENCE
+
+Zorux is an AI-first full-stack framework. A single `app.yaml` generates REST API, Admin UI, Mobile (Expo), Desktop (Tauri), PWA, GraphQL, Webhooks, Background Jobs, Auth (35 OAuth providers), Payments, Real-time WebSocket, and more.
+
+**Key principle:** Describe your app in YAML. Zorux generates everything. Zero boilerplate. ~500 tokens vs ~5,000 for traditional frameworks.
+
+---
+
+## QUICK START
+
+```bash
+npm install -g zorux
+zorux new my-app --saas
+cd my-app
+zorux dev
+```
+
+Server runs at `http://localhost:3000`:
+- API: `http://localhost:3000/api`
+- Admin: `http://localhost:3000/admin`
+- Swagger: `http://localhost:3000/api/docs`
+- WebSocket: `ws://localhost:3000/ws`
+
+---
+
+## YAML SCHEMA (app.yaml)
+
+The single source of truth. Every model, auth config, database, plugin defined here.
+
+### Top-Level
+
+```yaml
+name: string                    # App name
+type: api | web | mobile | fullstack  # App type
+provider: string                # Platform provider (default: "Zorux")
+database: DatabaseDef           # Database config
+models: Record<string, ModelDef>  # Model definitions
+auth: AuthDef                   # Auth configuration
+routes: Record<string, any>     # Custom routes
+realtime: RealtimeDef           # WebSocket config
+theme: ThemeDef                 # UI theme
+supabase: SupabaseDef           # Supabase integration
+storage: StorageDef             # File storage
+plugins: string[]               # Plugin names
+pluginConfig: PluginConfig      # Per-plugin config
+cache: CacheDef                 # Cache configuration
+i18n: I18nDef                   # Internationalization
+email: EmailDef                 # Email provider
+payments: PaymentsDef           # Payment provider
+search: SearchDef               # Search engine
+captcha: CaptchaDef             # Captcha config
+```
+
+### Database
+
+```yaml
+database:
+  provider: sqlite              # sqlite | postgres | mysql | mongodb | cloudflare-d1 | cf-d1 | supabase | :memory:
+  url: string                   # Connection string (for non-SQLite)
+```
+
+### Models
+
+```yaml
+models:
+  Post:
+    fields:
+      title: string required min:3 max:200
+      slug: string unique
+      body: text required
+      status: string enum:draft,published,archived default:draft
+      price: float min:0
+      count: int
+      active: bool
+      coverImage: file
+      author: User              # belongsTo — creates authorId FK
+      tags: Tag[]               # manyToMany
+    timestamps: true            # Auto created_at/updated_at (default: true)
+    policies:                   # ABAC/RBAC policies
+      list: public
+      read: public
+      create: authenticated
+      update: "resource.authorId == user.id"
+      delete: "user.role == 'admin'"
+    fieldPolicies:              # Field-level access
+      - field: price
+        readable: "user.role == 'admin'"
+        writable: "user.role == 'admin'"
+    derivedRoles:               # Dynamic roles
+      - name: editor
+        condition: "user.role == 'admin' || user.role == 'editor'"
+    scoped: true                # Multi-tenant (org-scoped)
+    id: int | uuid              # ID type (default: int)
+    softDelete: true            # Soft delete with deleted_at
+```
+
+### Field Types
+
+| Type | Description | Modifiers |
+|---|---|---|
+| `string` | VARCHAR(255) | required, unique, min:N, max:N, default:val, pattern:regex, enum:a,b,c |
+| `text` | TEXT | required, default:val |
+| `int` | INTEGER | required, min:N, max:N, default:val |
+| `float` | REAL/FLOAT | required, min:N, max:N, default:val |
+| `bool` | BOOLEAN | required, default:val |
+| `email` | VARCHAR with email validation | required, unique |
+| `file` | File upload field | required |
+
+### Relations
+
+```yaml
+author: User              # belongsTo — creates authorId INTEGER FK
+tags: Tag[]               # manyToMany — creates join table
+comments: Comment[]       # hasMany — creates postId on Comment
+```
+
+### Auth Configuration
+
+```yaml
+auth:
+  model: User                 # Auth model name
+  registration: open          # open | invite | admin
+  roles: [admin, editor, user]
+  defaultRole: user
+  passwordMinLength: 8
+  sessionExpiry: 24           # hours
+  refreshTokenExpiry: 30      # days
+  social:
+    google:
+      clientId: ${GOOGLE_CLIENT_ID}
+      clientSecret: ${GOOGLE_CLIENT_SECRET}
+    github:
+      clientId: ${GITHUB_CLIENT_ID}
+      clientSecret: ${GITHUB_CLIENT_SECRET}
+  organization:
+    enabled: true
+    roles: [owner, admin, member]
+    inviteExpiresIn: 7
+```
+
+### Policies (ABAC)
+
+Operators: `==`, `!=`, `>`, `>=`, `<`, `<=`, `&&`, `||`, `!`, `in`, `matches`, `contains`, `exists`
+
+Scopes: `user.*` (current user), `resource.*` (target resource), `env.*` (environment)
+
+```yaml
+policies:
+  list: public                                    # Anyone
+  read: authenticated                             # Logged in
+  create: "user.role == 'admin'"                  # Role check
+  update: "resource.authorId == user.id"          # Ownership
+  delete: "user.role == 'admin' || resource.authorId == user.id"  # Combined
+```
+
+### Cache
+
+```yaml
+cache:
+  provider: memory              # memory | redis | upstash | memcached | dynamodb | sqlite | cf-kv | cf-do
+  url: string
+  ttl: 60                       # seconds
+```
+
+### Storage
+
+```yaml
+storage:
+  provider: local               # local | s3
+  s3:
+    endpoint: string
+    region: string
+    bucket: string
+    accessKey: string
+    secretKey: string
+    publicUrl: boolean
+```
+
+### Email
+
+```yaml
+email:
+  provider: fake                # fake | log | resend | sendgrid | smtp
+  from: "noreply@myapp.com"
+  resend:
+    apiKey: string
+  sendgrid:
+    apiKey: string
+  smtp:
+    host: string
+    port: number
+    secure: boolean
+    user: string
+    pass: string
+```
+
+### Payments
+
+```yaml
+payments:
+  provider: stripe              # stripe | polar
+  stripe:
+    secretKey: string
+    webhookSecret: string
+  polar:
+    token: string
+```
+
+### Search
+
+```yaml
+search:
+  provider: meilisearch
+  url: string
+  apiKey: string
+```
+
+### Captcha
+
+```yaml
+captcha:
+  provider: turnstile           # turnstile | recaptcha
+  siteKey: string
+  secretKey: string
+```
+
+### i18n
+
+```yaml
+i18n:
+  defaultLocale: en
+  locales: [en, pt-BR, es, fr]
+  cookieName: lang
+```
+
+### Theme
+
+```yaml
+theme:
+  framework: tailwind           # default | tailwind | daisyui | antd | mui | chakra | mantine | headless
+  primary: "#3b82f6"
+  mode: dark                    # light | dark | auto
+  font: Inter
+  radius: 0.5rem
+```
+
+### Real-time
+
+```yaml
+realtime:
+  enabled: true
+  channels:
+    posts: "posts.*"
+    comments: "comments.*"
+```
+
+---
+
+## CLI COMMANDS
+
+```bash
+zorux new <name> [--api|--web|--mobile|--fullstack|--saas|--all] [--ui <framework>]
+zorux dev [port]                          # Dev server with hot reload
+zorux gen mobile                          # Generate Expo app
+zorux gen desktop                         # Generate Tauri app
+zorux gen pwa                             # Generate PWA
+zorux gen graphql                         # Generate GraphQL client
+zorux add model <Name> <field>:<type> [flags...]
+zorux make action <name> <handler1> [handler2...]
+zorux make job <name>
+zorux make migration <name>
+zorux seed [--count N] [Model:N...]
+zorux db reset                            # Delete SQLite database
+zorux db migrate [--auto]                 # Run migrations
+zorux db rollback                         # Rollback last batch
+zorux db status                           # Show migration status
+zorux db schema dump                      # Dump schema to SQL
+zorux deploy [docker|vercel|netlify|cloudflare]
+zorux test [--run|--e2e|--security]
+zorux audit                               # Security audit
+zorux info                                # Project info
+zorux docs [topic]                        # Open documentation
+zorux scaffold forum|blog|ecommerce|saas [name]
+zorux console                             # Interactive REPL
+zorux runner <script>                     # Run custom script
+zorux plugin list|add|remove
+zorux credentials setup|edit|show
+zorux version
+zorux completion bash|zsh|fish
+```
+
+---
+
+## API ENDPOINTS
+
+All models auto-generate CRUD at `/api/{tableName}`:
+
+### CRUD
+
+```
+GET    /api/posts                    # List (page, limit, search, sort, order)
+POST   /api/posts                    # Create
+GET    /api/posts/:id                # Get by ID
+PUT    /api/posts/:id                # Update
+DELETE /api/posts/:id                # Delete
+POST   /api/posts/bulk               # Bulk create
+PUT    /api/posts/bulk               # Bulk update
+DELETE /api/posts/bulk               # Bulk delete
+GET    /api/posts/export?format=json|csv|xlsx
+POST   /api/posts/import             # JSON/CSV/XLSX upload
+```
+
+### Soft Delete (if softDelete: true)
+
+```
+POST   /api/posts/:id/restore        # Restore
+DELETE /api/posts/:id/permanent      # Hard delete
+```
+
+### Query Parameters
+
+| Param | Description |
+|---|---|
+| `page` | Page number (default: 1) |
+| `limit` | Items per page (max: 100, default: 20) |
+| `search` | Full-text search |
+| `sort` | Field to sort by |
+| `order` | asc or desc |
+| `include` | Comma-separated relations |
+
+### Auth Endpoints
+
+```
+POST   /api/auth/register            # Register
+POST   /api/auth/login               # Login
+GET    /api/auth/me                  # Current user
+POST   /api/auth/refresh             # Refresh token
+POST   /api/auth/forgot-password     # Request reset
+POST   /api/auth/reset-password      # Confirm reset
+POST   /api/auth/send-verification   # Send verification
+GET    /api/auth/verify-email?token= # Verify email
+POST   /api/auth/magic-link/send     # Send magic link
+GET    /api/auth/magic-link?token=   # Login via link
+POST   /api/auth/otp/send            # Send OTP
+POST   /api/auth/otp/verify          # Verify OTP
+POST   /api/auth/api-keys            # Create API key
+GET    /api/auth/api-keys            # List keys
+DELETE /api/auth/api-keys/:id        # Revoke key
+POST   /api/auth/2fa/setup           # Setup TOTP
+POST   /api/auth/2fa/confirm         # Confirm TOTP
+POST   /api/auth/2fa/disable         # Disable TOTP
+GET    /api/auth/sessions            # List sessions
+DELETE /api/auth/sessions/:id        # Revoke session
+POST   /api/auth/sessions/revoke-all # Revoke all
+```
+
+### Social Auth
+
+```
+GET    /api/auth/social/{provider}/authorize
+GET    /api/auth/social/{provider}/callback
+POST   /api/auth/social/link
+GET    /api/auth/social/accounts
+```
+
+### WebAuthn
+
+```
+POST   /api/auth/webauthn/register/begin
+POST   /api/auth/webauthn/register/complete
+POST   /api/auth/webauthn/auth/begin
+POST   /api/auth/webauthn/auth/complete
+GET    /api/auth/webauthn/credentials
+DELETE /api/auth/webauthn/credentials/:id
+```
+
+### Organizations
+
+```
+POST   /api/auth/orgs                  # Create
+GET    /api/auth/orgs                  # List my orgs
+GET    /api/auth/orgs/:id              # Get org
+PUT    /api/auth/orgs/:id              # Update
+DELETE /api/auth/orgs/:id              # Delete
+GET    /api/auth/orgs/:id/members      # List members
+POST   /api/auth/orgs/:id/invite       # Invite
+GET    /api/auth/orgs/accept-invite?token=
+POST   /api/auth/orgs/decline-invite
+POST   /api/auth/orgs/:id/members/:memberId  # Update role
+DELETE /api/auth/orgs/:id/members/:memberId  # Remove
+```
+
+### OAuth Provider (IdP)
+
+```
+POST   /api/oauth/register
+GET    /api/oauth/clients
+DELETE /api/oauth/clients/:id
+GET    /api/oauth/authorize
+POST   /api/oauth/token
+GET    /api/oauth/userinfo
+GET    /api/oauth/.well-known/openid-configuration
+GET    /api/oauth/.well-known/jwks.json
+```
+
+### Payments
+
+```
+POST   /api/payments/checkout
+POST   /api/payments/customer
+POST   /api/payments/subscription
+DELETE /api/payments/subscription/:id
+POST   /api/payments/webhook
+```
+
+### Search
+
+```
+GET    /api/search/:model?q=&limit=&offset=
+GET    /api/search?q=&limit=
+```
+
+### Webhooks
+
+```
+POST   /api/webhooks
+GET    /api/webhooks
+PUT    /api/webhooks/:id
+DELETE /api/webhooks/:id
+```
+
+### Feature Flags
+
+```
+GET    /api/features
+POST   /api/features
+PUT    /api/features/:key/toggle
+DELETE /api/features/:key
+```
+
+### Notifications
+
+```
+GET    /api/notifications
+PUT    /api/notifications/:id/read
+POST   /api/notifications/read-all
+```
+
+### Audit Logs
+
+```
+GET    /api/audit-logs?model=&action=&limit=&offset=
+```
+
+### Jobs
+
+```
+POST   /api/jobs/:name/submit
+```
+
+### Captcha
+
+```
+POST   /api/captcha/verify
+```
+
+### Health & Metrics
+
+```
+GET    /api/health
+GET    /api/admin/metrics
+GET    /api/metrics              # Prometheus format
+```
+
+### GraphQL
+
+```
+POST   /api/graphql
+GET    /api/graphql?query=...
+```
+
+### OpenAPI
+
+```
+GET    /api/openapi.json
+GET    /api/docs                 # Swagger UI
+GET    /api                      # App info
+```
+
+### Custom Actions
+
+```
+ALL    /api/actions/{module}/{handler}
+```
+
+---
+
+## AUTHENTICATION
+
+### Methods
+
+1. **Email/Password** — bcrypt via `Bun.password.hash()`
+2. **JWT** — HS256, 24h expiry, `JWT_SECRET` env var
+3. **Sessions** — Refresh tokens (30-day expiry)
+4. **API Keys** — `Zorux_` prefix, 64-byte random, optional expiry
+5. **OAuth/Social** — 36 providers (Google, GitHub, Discord, Apple, etc.)
+6. **Magic Link** — Email-based passwordless (15-min expiry)
+7. **Email OTP** — 6-digit code (10-min expiry)
+8. **WebAuthn** — FIDO2 passkeys/biometrics
+9. **2FA/TOTP** — Google Authenticator compatible
+
+### Auth Headers
+
+```
+Authorization: Bearer <jwt-token>
+Authorization: Bearer Zorux_xxxxxxxxxxxxxxxx...  # API key
+Cookie: token=<jwt-token>
+```
+
+### OAuth Providers (36)
+
+google, github, discord, apple, atlassian, cognito, dropbox, facebook, figma, gitlab, huggingface, kakao, kick, line, linear, linkedin, microsoft, naver, notion, paybin, paypal, polar, railway, reddit, roblox, salesforce, slack, spotify, tiktok, twitch, twitter, vercel, vk, wechat, zoom, huawei
+
+---
+
+## DATABASE
+
+### Providers
+
+| Provider | Description |
+|---|---|
+| `sqlite` | Local file (default), WAL mode, prepared statement cache |
+| `:memory:` | In-memory SQLite (testing) |
+| `postgres` | PostgreSQL via `postgres` npm package |
+| `mysql` | MySQL via `mysql2/promise` |
+| `mongodb` | MongoDB via `mongodb` npm package |
+| `cloudflare-d1` | Cloudflare D1 via REST API |
+| `supabase` | Supabase PostgreSQL |
+
+### System Tables
+
+`_migrations`, `_sessions`, `_audit_logs`, `_notifications`, `_feature_flags`, `_webhooks`, `_social_accounts`, `_oauth_clients`, `_oauth_codes`, `_oauth_tokens`, `_webauthn_credentials`, `_totp_secrets`, `_auth_tokens`, `_api_keys`, `_organizations`, `_org_members`, `_org_invites`, `_kai_jobs`
+
+---
+
+## CACHE
+
+### Providers
+
+| Provider | Env Vars |
+|---|---|
+| `memory` | — |
+| `redis` | `REDIS_URL` |
+| `upstash` | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` |
+| `memcached` | `MEMCACHED_HOST`, `MEMCACHED_PORT` |
+| `dynamodb` | `DYNAMODB_CACHE_TABLE`, `AWS_REGION` |
+| `sqlite` | `SQLITE_CACHE_PATH` |
+| `cf-kv` | `CF_ACCOUNT_ID`, `CF_KV_NAMESPACE_ID`, `CF_API_TOKEN` |
+| `cf-do` | `CF_DO_NAMESPACE_ID` |
+
+### Auto-Caching
+
+GET responses cached by URL. Invalidated on POST/PUT/DELETE. Headers: `X-Cache: HIT` or `X-Cache: MISS`.
+
+---
+
+## STORAGE
+
+### Providers
+
+| Provider | Description |
+|---|---|
+| `local` | `public/uploads/{table}/{timestamp}-{random}.{ext}` |
+| `s3` | AWS S3, MinIO, R2, Spaces — any S3-compatible |
+| `supabase` | Supabase Storage |
+
+### S3 Env Vars
+
+`S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`
+
+### File Validation
+
+- MIME type detection
+- Blocked extensions: `.exe, .bat, .cmd, .com, .scr, .pif, .msi, .js, .vbs, .wsf, .php, .py, .rb, .pl, .sh`
+- Filename sanitization (path traversal, null bytes)
+
+---
+
+## EMAIL
+
+### Providers
+
+| Provider | Env Vars | Description |
+|---|---|---|
+| `fake` | — | In-memory sandbox, viewable at `/admin/emails` |
+| `log` | — | Console.log only |
+| `resend` | `RESEND_API_KEY` | Resend API |
+| `sendgrid` | `SENDGRID_API_KEY` | SendGrid API |
+| `smtp` | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | SMTP via Nodemailer |
+
+### API
+
+```typescript
+sendEmail({
+  to: "user@example.com" | ["a@x.com", "b@x.com"],
+  subject: "Hello",
+  text: "Plain text",
+  html: "<h1>HTML</h1>",
+  from: "custom@from.com"  // optional
+})
+```
+
+---
+
+## BACKGROUND JOBS
+
+Jobs defined in `jobs/*.ts`, auto-loaded.
+
+```typescript
+// jobs/send-email.ts
+export default {
+  name: "send-email",
+  async perform(args: { email: string; subject: string }, context: any) {
+    await sendEmail(args)
+  }
+}
+```
+
+### Submit
+
+```bash
+POST /api/jobs/:name/submit
+{ "args": { ... }, "delay": 3600, "maxRetries": 5 }
+```
+
+### Features
+
+- Persistent queue in `_kai_jobs` table
+- Statuses: pending, running, completed, failed
+- Retry: exponential backoff (5s, 10s, 20s...), max 3 retries (configurable)
+- Delayed scheduling via `scheduled_at`
+- Worker polls every 1000ms, up to 10 jobs per tick
+
+---
+
+## PAYMENTS
+
+### Providers
+
+| Provider | Env Vars |
+|---|---|
+| `stripe` | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| `polar` | `POLAR_TOKEN` |
+
+### API
+
+```bash
+POST /api/payments/checkout
+{ "priceId": "price_xxx", "customerEmail": "x@x.com", "successUrl": "...", "cancelUrl": "..." }
+
+POST /api/payments/customer
+{ "email": "x@x.com", "name": "John" }
+
+POST /api/payments/subscription
+{ "customerId": "cus_xxx", "priceId": "price_xxx" }
+
+DELETE /api/payments/subscription/:id
+```
+
+---
+
+## REAL-TIME
+
+### WebSocket
+
+```
+ws://localhost:3000/ws
+```
+
+Client sends: `{ "subscribe": "posts" }`
+Server pushes: `{ "topic": "posts:created", "data": { ... } }`
+
+### Auto-Publish
+
+CRUD operations auto-publish: `{tableName}:created`, `{tableName}:updated`, `{tableName}:deleted`, `{tableName}:restored`
+
+### Pub/Sub
+
+```typescript
+subscribe("posts", (data) => { ... })
+publish("posts:created", { id: 1, title: "Hello" })
+publishMany(["posts", "notifications"], { ... })
+```
+
+---
+
+## WEBHOOKS
+
+### Register
+
+```bash
+POST /api/webhooks
+{ "url": "https://myapp.com/webhook", "events": "posts.created,posts.updated", "secret": "my-secret" }
+```
+
+Events: `*` (all), `posts.*` (all post events), `posts.created` (specific)
+
+### Payload
+
+```json
+{
+  "event": "posts:created",
+  "model": "posts",
+  "data": { ... },
+  "timestamp": "2026-01-01T00:00:00.000Z"
+}
+```
+
+### Signing
+
+HMAC-SHA256 of `JSON.stringify(payload) + secret`
+Headers: `X-Webhook-Signature: sha256=...`, `X-Webhook-Event: posts:created`
+
+---
+
+## PLUGINS
+
+### Interface
+
+```typescript
+interface KaiPlugin {
+  name: string
+  version?: string
+  description?: string
+  dependsOn?: string[]
+  onConfig?: (config: AppConfig) => AppConfig
+  onModel?: (models) => models
+  onCompiledModel?: (models, config) => models
+  onSchema?: (schema, model) => string
+  onRoutes?: (app: Hono, platform) => void
+  onMiddleware?: (app: Hono) => void
+  onDBQuery?: (query) => query
+  onError?: (error, context) => Response | void
+  onStart?: (platform) => void
+  onShutdown?: () => void
+}
+```
+
+### Loading
+
+- Local: `plugins/{name}.ts` or `plugins/{name}/index.ts`
+- npm: tries exact name, then `kai-plugin-{name}`
+
+### 12 Auto-Detect Adapters
+
+Native KaiPlugin, Hono middleware, Express middleware/Router/app, Passport Strategy, install() hook, setup()/init()/register() hooks, Koa middleware, Fastify plugin, namespace with middleware exports, class with handle()
+
+---
+
+## SECURITY
+
+### ABAC/RBAC Policy Engine
+
+Recursive descent parser. Operators: `==`, `!=`, `>`, `>=`, `<`, `<=`, `&&`, `||`, `!`, `in`, `matches`, `contains`, `exists`
+
+Scopes: `user.*`, `resource.*`, `env.*`
+
+AST cache for expressions under 500 chars.
+
+### Security Headers
+
+`X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`, `Strict-Transport-Security` (production), `Content-Security-Policy`
+
+### Rate Limiter
+
+200 requests per 60-second window. Token bucket. Keyed by `X-Forwarded-For` or `X-Real-IP`. Headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`
+
+### CSRF
+
+Token store with 1-hour TTL. `csrf_session` cookie. `X-CSRF-Token` header. Skipped for `multipart/form-data`.
+
+### Body Size Limit
+
+1MB default. Returns 413 if exceeded.
+
+### Input Sanitization
+
+Filename sanitization (path traversal, null bytes). HTML escaping. JSON depth limit (20). Null byte removal. Control character removal.
+
+### Cookie Hardening
+
+`HttpOnly`, `Secure` (production), `SameSite=Strict` (production) / `Lax` (dev)
+
+### Audit Log
+
+Every create/update/delete logged to `_audit_logs`: user, model, record_id, old/new values, IP. Queryable via `GET /api/audit-logs`.
+
+---
+
+## GRAPHQL
+
+Auto-generated from models.
+
+### Queries
+
+```graphql
+{ post(id: 1) { id title body } }
+{ postsList(page: 1, limit: 10, search: "hello", sort: "title", order: "asc") { rows { id title } total page limit } }
+```
+
+### Mutations
+
+```graphql
+mutation { createPost(data: { title: "Hello", body: "World", authorId: 1 }) { id title } }
+mutation { updatePost(id: 1, data: { title: "Updated" }) { id title } }
+mutation { deletePost(id: 1) { id } }
+```
+
+### Type Mapping
+
+`int`/`bool` → `Int`, `float` → `Float`, `string`/`text`/`email`/`file` → `String`
+
+---
+
+## MOBILE (EXPO)
+
+```bash
+zorux gen mobile
+```
+
+Generates full Expo project with:
+- Typed SDK per model
+- Auth screens (login, register, OAuth)
+- Per-model CRUD screens (list, create, edit)
+- Realtime WebSocket hook
+- ImagePicker for file uploads
+- Pull-to-refresh
+- Form validation UI
+
+---
+
+## DESKTOP (TAURI)
+
+```bash
+zorux gen desktop
+```
+
+Generates Tauri v2 project with:
+- Rust backend (`src-tauri/`)
+- Connects to `localhost:3000` (dev) or production URL
+- Native menus, system tray, file dialogs
+- Cross-platform: Windows, macOS, Linux
+
+---
+
+## PWA
+
+```bash
+zorux gen pwa
+```
+
+Generates:
+- `manifest.json` with icons
+- `sw.js` service worker (network-first caching)
+- Auto-registration on admin pages
+
+---
+
+## I18N
+
+```yaml
+i18n:
+  defaultLocale: en
+  locales: [en, pt-BR, es, fr]
+  cookieName: lang
+```
+
+Translation files: `locales/{locale}.json`
+
+```typescript
+t(key: string, vars?: Record<string, string | number>, locale?: string): string
+```
+
+Locale detection: `lang` query param → `lang` cookie → `Accept-Language` header → default
+
+---
+
+## TELEMETRY
+
+### Metrics
+
+```typescript
+const counter = new Counter("http_requests_total", "Total requests")
+counter.add(1, { method: "GET", path: "/api/posts" })
+
+const histogram = new Histogram("http_request_duration_ms", "Duration")
+histogram.record(45)
+```
+
+### Tracing
+
+```typescript
+const span = startSpan("process-payment", { orderId: "123" })
+addSpanEvent(span, "payment-initiated")
+endSpan(span, "ok")
+```
+
+### Exporters
+
+Console (stdout), OTLP (`OTLP_ENDPOINT` env var)
+
+### Metrics Endpoint
+
+`GET /api/metrics` — Prometheus text format
+
+---
+
+## DEPLOY
+
+### Docker
+
+```bash
+zorux deploy docker    # Generates Dockerfile + docker-compose.yml
+```
+
+### Vercel
+
+```bash
+zorux deploy vercel    # Generates vercel.json
+# Use PostgreSQL, not SQLite. WebSocket not supported.
+```
+
+### Netlify
+
+```bash
+zorux deploy netlify   # Generates netlify.toml
+# Use PostgreSQL. WebSocket not supported.
+```
+
+### Cloudflare Workers
+
+```bash
+zorux deploy cloudflare  # Generates wrangler.toml
+# Uses D1 (database), KV (cache), Queues (jobs)
+```
+
+---
+
+## ENVIRONMENT VARIABLES
+
+### Required
+
+`JWT_SECRET` — Change from default in production!
+
+### Database
+
+`DATABASE_URL` — Connection string
+
+### Cache
+
+`REDIS_URL`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `MEMCACHED_HOST`, `MEMCACHED_PORT`, `DYNAMODB_CACHE_TABLE`, `AWS_REGION`, `SQLITE_CACHE_PATH`, `CF_ACCOUNT_ID`, `CF_KV_NAMESPACE_ID`, `CF_API_TOKEN`, `CF_DO_NAMESPACE_ID`
+
+### Email
+
+`RESEND_API_KEY`, `SENDGRID_API_KEY`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`
+
+### Storage
+
+`S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`
+
+### Payments
+
+`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `POLAR_TOKEN`
+
+### OAuth
+
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, etc.
+
+### Captcha
+
+`TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`
+
+### Telemetry
+
+`OTLP_ENDPOINT`
+
+---
+
+## PROJECT STRUCTURE
+
+```
+my-app/
+├── app.yaml              # Single source of truth
+├── actions/              # Custom action handlers (*.ts)
+├── jobs/                 # Background job definitions (*.ts)
+├── plugins/              # Local plugins (*.ts or */index.ts)
+├── migrations/           # Database migrations (*.sql or *.ts)
+├── locales/              # i18n translation files (*.json)
+├── public/
+│   └── uploads/          # Uploaded files (local storage)
+├── db/
+│   └── app.db            # SQLite database (auto-created)
+└── package.json
+```
+
+---
+
+## CUSTOM ACTIONS
+
+```typescript
+// actions/greet.ts
+export const hello = F.public(async (ctx) => {
+  return F.json({ message: "Hello!" })
+})
+
+export const protected_action = F.auth(async (ctx) => {
+  const user = ctx.get("user")
+  return F.json({ user })
+})
+
+export const admin_only = F.role("admin").run(async (ctx) => {
+  return F.json({ admin: true })
+})
+```
+
+Routes: `ALL /api/actions/greet/hello`, `ALL /api/actions/greet/protected_action`, etc.
+
+### F Object
+
+```typescript
+F.public(handler)      // No auth required
+F.auth(handler)        // Must be logged in
+F.role("admin").run(handler)  // Must have role
+F.owner("authorId").run(handler)  // Must own resource
+F.html(strings, ...values)  // HTML response
+F.json(data)           // JSON response
+```
+
+---
+
+## COMPLETE EXAMPLE
+
+```yaml
+name: blog-platform
+type: fullstack
+database:
+  provider: postgres
+  url: "postgres://postgres:pass@localhost:5432/blog"
+
+models:
+  User:
+    fields:
+      name: string required
+      email: email required unique
+      avatar: file
+      role: string enum:admin,editor,subscriber default:subscriber
+    auth: password
+    timestamps: true
+
+  Post:
+    fields:
+      title: string required min:3 max:200
+      slug: string unique
+      body: text required
+      status: string enum:draft,published default:draft
+      coverImage: file
+      author: User
+      category: Category
+      tags: Tag[]
+    timestamps: true
+    policies:
+      list: public
+      read: public
+      create: authenticated
+      update: owner
+      delete: admin
+
+  Category:
+    fields:
+      name: string required unique
+      description: text
+    timestamps: true
+
+  Tag:
+    fields:
+      name: string required unique
+    timestamps: true
+
+  Comment:
+    fields:
+      body: text required
+      author: User
+      post: Post
+    timestamps: true
+    policies:
+      create: authenticated
+      update: owner
+      delete: "user.role == 'admin' || resource.authorId == user.id"
+
+auth:
+  model: User
+  registration: open
+  roles: [admin, editor, subscriber]
+  defaultRole: subscriber
+  social:
+    google:
+      clientId: ${GOOGLE_CLIENT_ID}
+      clientSecret: ${GOOGLE_CLIENT_SECRET}
+    github:
+      clientId: ${GITHUB_CLIENT_ID}
+      clientSecret: ${GITHUB_CLIENT_SECRET}
+
+cache:
+  provider: redis
+  url: ${REDIS_URL}
+  ttl: 120
+
+storage:
+  provider: s3
+  s3:
+    bucket: blog-uploads
+    region: us-east-1
+
+email:
+  provider: resend
+  from: "noreply@blog.com"
+
+realtime:
+  enabled: true
+
+search:
+  provider: meilisearch
+  url: http://localhost:7700
+
+i18n:
+  defaultLocale: en
+  locales: [en, pt-BR]
+
+theme:
+  framework: tailwind
+  primary: "#3b82f6"
+  mode: dark
+```
+
+---
+
+## KEY DESIGN DECISIONS
+
+1. **Single source of truth** — `app.yaml` is the exclusive DSL. No separate route files, config files, or migration scripts.
+2. **Convention over configuration** — Model names pluralized for tables. Relations create FKs automatically. Auth model gets password field and auth routes.
+3. **Lazy optional dependencies** — All optional packages `require()`d inside function bodies, not at module scope.
+4. **Provider-agnostic interfaces** — DatabaseAdapter, CacheAdapter, StorageProvider, EmailProvider, PaymentProvider. Switch by changing one YAML line.
+5. **UUID v7 default** — RFC 9562, time-ordered, cryptographically random suffix.
+6. **Plugin routes after admin** — Plugins can override admin routes.
+7. **bun:sqlite** — Uses `bun:sqlite` directly, not better-sqlite3.
+8. **Bun native WebSocket** — `Bun.serve()` with websocket option. No external packages.
+9. **Hot reload via fs.watch** — Watches app.yaml, actions/, jobs/, plugins/, locales/, views/. 300ms debounce.

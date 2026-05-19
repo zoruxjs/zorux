@@ -1,76 +1,182 @@
-# Zorux Framework — Getting Started
+# Getting Started
 
-Zorux is an AI-first full-stack framework. Define your app in a single YAML file (~200 tokens) and get API, Web SSR, Mobile, Realtime, and more.
+Zorux is an AI-first full-stack framework. A single `app.yaml` file generates your entire application — REST API, admin panel, mobile app, desktop app, PWA, GraphQL, webhooks, background jobs, authentication with 35+ OAuth providers, and more.
+
+## Why Zorux
+
+Traditional frameworks require you to wire together dozens of packages, write boilerplate for every feature, and spend thousands of AI tokens on repetitive code. Zorux eliminates all of that.
+
+| Feature | Zorux | Traditional |
+|---|---|---|
+| Tokens to generate full-stack app | ~500 | ~5,000 |
+| Config files | 1 (`app.yaml`) | 10-30 |
+| Packages to install | 0 (all built-in) | 20-50 |
+| Time to first CRUD | 10 seconds | 30-60 min |
+| Auth providers | 35 built-in | Manual setup each |
+
+## Installation
+
+```bash
+npm install -g zorux
+```
+
+**Requirements:** Node.js 20+ or Bun 1.2+
 
 ## Quick Start
 
+### 1. Create a project
+
 ```bash
-# Create a new project
-fw new my-app --fullstack
-cd my-app
+# Full SaaS (API + Admin + Auth + Payments)
+zorux new my-app --saas
 
-# Start development server
-fw dev
+# API only
+zorux new my-api --api
 
-# Open in browser
-open http://localhost:3000
+# Full-stack (API + Admin)
+zorux new my-app --fullstack
+
+# With specific UI framework
+zorux new my-app --saas --ui tailwind
 ```
+
+### 2. Define your models
+
+Edit `app.yaml`:
+
+```yaml
+name: my-app
+database:
+  provider: sqlite
+
+models:
+  Post:
+    fields:
+      title: string required
+      body: text required
+      status: string enum:draft,published,archived default:draft
+      author: User
+    timestamps: true
+    policies:
+      list: public
+      create: authenticated
+      update: owner
+      delete: admin
+
+  User:
+    fields:
+      name: string required
+      email: email required unique
+      avatar: file
+    auth: password
+    timestamps: true
+```
+
+### 3. Run
+
+```bash
+cd my-app
+zorux dev
+```
+
+Your app is now running at `http://localhost:3000`:
+- **API**: `http://localhost:3000/api`
+- **Admin**: `http://localhost:3000/admin`
+- **Swagger UI**: `http://localhost:3000/api/docs`
+- **WebSocket**: `ws://localhost:3000/ws`
 
 ## Project Structure
 
 ```
 my-app/
-├── app.yaml          # Main config: models, auth, database, plugins
-├── actions/          # Custom server actions
-│   └── *.ts
-├── jobs/             # Background jobs
-│   └── *.ts
-├── plugins/          # Local plugins
-│   └── *.ts
-├── public/           # Static files
-│   └── uploads/
-├── mobile/           # Generated Expo app
-├── src/              # Generated production entry point
-├── .env              # Environment variables
+├── app.yaml              # Single source of truth
+├── actions/              # Custom action handlers
+│   └── my-action.ts
+├── jobs/                 # Background job definitions
+│   └── send-email.ts
+├── plugins/              # Local plugins
+│   └── my-plugin.ts
+├── migrations/           # Database migrations
+│   └── 20260101000000_create_table.sql
+├── locales/              # i18n translation files
+│   └── en.json
+├── public/               # Static files
+│   └── uploads/          # Uploaded files (local storage)
+├── db/
+│   └── app.db            # SQLite database (auto-created)
 └── package.json
 ```
 
-## Defining Models
-
-```yaml
-name: my-app
-type: api
-
-database:
-  provider: sqlite
-
-models:
-  User:
-    fields:
-      name: string required
-      email: string unique
-    auth: password
-
-  Post:
-    fields:
-      title: string required min:3 max:100
-      body: text
-      rating: int min:1 max:5
-      status: string enum:draft,published,archived
-      author: User
-```
-
-## Running
+## CLI Commands
 
 ```bash
-fw dev              # Development server with hot reload
-fw gen mobile       # Generate Expo mobile app
+zorux new <name> [options]    # Create new project
+zorux dev [port]              # Start dev server with hot reload
+zorux gen mobile              # Generate Expo mobile app
+zorux gen desktop             # Generate Tauri desktop app
+zorux gen pwa                 # Generate PWA
+zorux gen graphql             # Generate GraphQL client
+zorux add model <Name> ...    # Add model to app.yaml
+zorux make action <name>      # Create action file
+zorux make job <name>         # Create job file
+zorux make migration <name>   # Create migration file
+zorux seed [--count N]        # Seed database
+zorux db reset                # Delete database
+zorux db migrate [--auto]     # Run migrations
+zorux db rollback             # Rollback last batch
+zorux db status               # Show migration status
+zorux db schema dump          # Dump schema to SQL
+zorux deploy                  # Deploy app
+zorux test                    # Run tests
+zorux audit                   # Security audit
+zorux info                    # Project info
+zorux docs [topic]            # Open documentation
+zorux scaffold <template>     # Scaffold from template
+zorux console                 # Interactive REPL
+zorux plugin list|add|remove  # Manage plugins
+zorux credentials setup       # Manage credentials
+zorux version                 # Show version
+```
+
+## Auto-Generated API
+
+Every model automatically gets full CRUD endpoints:
+
+```bash
+# List posts (with pagination, search, sort)
+GET /api/posts?page=1&limit=20&search=hello&sort=created_at&order=desc
+
+# Create a post
+POST /api/posts
+{"title": "Hello", "body": "World", "authorId": 1}
+
+# Get a post
+GET /api/posts/1
+
+# Update a post
+PUT /api/posts/1
+{"title": "Updated"}
+
+# Delete a post
+DELETE /api/posts/1
+
+# Bulk operations
+POST /api/posts/bulk
+PUT /api/posts/bulk
+DELETE /api/posts/bulk
+
+# Export/Import
+GET /api/posts/export?format=csv
+POST /api/posts/import  # multipart file upload
 ```
 
 ## Next Steps
 
-- [YAML Reference](yaml.md)
-- [Database](database.md)
-- [Auth & RBAC](auth.md)
-- [Admin UI](admin.md)
-- [API CRUD](api.md)
+- [YAML Reference](yaml) — Complete schema documentation
+- [API Reference](api) — All endpoints and query params
+- [Authentication](auth) — All auth methods
+- [Admin Panel](admin) — Admin UI features
+- [CLI Reference](cli) — All commands
+- [Database](database) — Providers and migrations
+- [Security](security) — ABAC, RBAC, headers
+- [Deploy](deploy) — Production deployment
