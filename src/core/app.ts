@@ -190,6 +190,13 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
   // Plugin startup hook
   await applyPluginStart(platform, plugins)
 
+  // Debug: list all registered routes
+  if (process.env.NODE_ENV !== "production") {
+    const routes = (app as any).routes || []
+    const routePaths = routes.map((r: any) => r.method + " " + r.path).join(", ")
+    console.log("  Routes: " + (routePaths || "(none registered)"))
+  }
+
   // Initialize email
   try {
     const emailCfg = (config as any).email

@@ -136,8 +136,10 @@ export async function applyPluginRoutes(app: Hono, platform: PlatformAdapter, pl
     if (plugin.onRoutes) {
       try {
         await plugin.onRoutes(app, platform)
+        console.log("  [Zorux] Plugin routes registered: " + plugin.name)
       } catch (err: any) {
-        console.warn("  [Zorux] Plugin '" + plugin.name + "' onRoutes error: " + err.message)
+        console.error("\n  [Zorux] Plugin '" + plugin.name + "' onRoutes ERROR: " + err.message)
+        console.error("  [Zorux] Stack: " + (err.stack?.split("\n").slice(0, 3).join("\n  ") || "N/A"))
       }
     }
   }
