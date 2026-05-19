@@ -19,7 +19,7 @@ export const Layout: FC<LayoutProps> = ({ title, user, models, children }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="theme-color" content="#ffffff" />
         <title>{title}</title>
-        <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+        <link rel="stylesheet" href={"/static/daisyui.min.css" + (CB ? "?v=" + CB : "")} />
         <link rel="stylesheet" href={"/static/Zorux.css" + (CB ? "?v=" + CB : "")} />
         <script src={"/static/turbo.js" + (CB ? "?v=" + CB : "")}></script>
         <script>{`
