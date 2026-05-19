@@ -13,11 +13,11 @@ export function securityHeaders(c: any, next: any) {
 
   // CSP — restrictive but allows inline styles and CDN scripts for Swagger UI
   c.header("Content-Security-Policy", [
-    "default-src 'self'",
+    "default-src 'self' https:",
     "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
-    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
     "img-src 'self' data: https:",
-    "font-src 'self' https://cdn.jsdelivr.net",
+    "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
     "frame-ancestors 'none'",
   ].join("; "))
 
