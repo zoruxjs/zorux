@@ -85,7 +85,7 @@ export function credentialsCommand(args: string[]) {
 
   } else if (subcmd === "show") {
     if (!existsSync(credPath)) {
-      console.log("  No credentials file found. Run 'fw credentials edit' to create one.")
+      console.log("zorux credentials edit' to create one.")
       return
     }
     try {
@@ -106,8 +106,8 @@ export function credentialsCommand(args: string[]) {
 
   } else {
     console.log("Usage:")
-    console.log("  fw credentials setup          # Initialize master key + credentials")
-    console.log("  fw credentials edit            # Open credentials in editor")
-    console.log("  fw credentials show            # Display decrypted credentials")
+    console.log("zorux credentials setup          # Initialize master key + credentials")
+    console.log("zorux credentials edit            # Open credentials in editor")
+    console.log("zorux credentials show            # Display decrypted credentials")
   }
 }

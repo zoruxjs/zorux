@@ -40,7 +40,7 @@ export async function pluginCommand(args: string[]) {
     }
   } else if (sub === "add") {
     const name = args[2]
-    if (!name) { console.error("Usage: fw plugin add <name>"); process.exit(1) }
+    if (!name) { console.error("zorux plugin add <name>"); process.exit(1) }
     const yaml = readFileSync(yamlPath, "utf-8")
     if (yaml.includes("plugins:")) {
       // Add to existing plugins list
@@ -66,7 +66,7 @@ export async function pluginCommand(args: string[]) {
     console.log("Added plugin '" + name + "' to app.yaml")
   } else if (sub === "remove") {
     const name = args[2]
-    if (!name) { console.error("Usage: fw plugin remove <name>"); process.exit(1) }
+    if (!name) { console.error("zorux plugin remove <name>"); process.exit(1) }
     const filtered = pluginNames.filter(n => n !== name)
     if (filtered.length === pluginNames.length) {
       console.log("Plugin '" + name + "' not found in app.yaml")
@@ -79,8 +79,8 @@ export async function pluginCommand(args: string[]) {
     console.log("Removed plugin '" + name + "' from app.yaml")
   } else {
     console.log("Usage:")
-    console.log("  fw plugin list              List configured plugins")
-    console.log("  fw plugin add <name>        Add a plugin to app.yaml")
-    console.log("  fw plugin remove <name>     Remove a plugin from app.yaml")
+    console.log("zorux plugin list              List configured plugins")
+    console.log("zorux plugin add <name>        Add a plugin to app.yaml")
+    console.log("zorux plugin remove <name>     Remove a plugin from app.yaml")
   }
 }

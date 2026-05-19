@@ -26,8 +26,8 @@ export async function addModelCommand(args: string[]) {
 
   const modelName = args[2]
   if (!modelName) {
-    console.error("Usage: fw add model <ModelName> <field>:<type> [flags...]")
-    console.error("  Example: fw add model Post title:string required body:text")
+    console.error("zorux add model <ModelName> <field>:<type> [flags...]")
+    console.error("zorux add model Post title:string required body:text")
     process.exit(1)
   }
 
@@ -101,7 +101,7 @@ export async function addModelCommand(args: string[]) {
       console.log("  Regenerating mobile app...")
       genMobileCommand(rootDir)
     } catch (err: any) {
-      console.log("  Note: mobile regeneration failed. Run 'fw gen mobile' manually.")
+      console.log("zorux gen mobile' manually.")
     }
   }
 }

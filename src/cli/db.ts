@@ -42,7 +42,7 @@ export async function dbCommand(args: string[]) {
       const walPath = dbPath + ext
       if (existsSync(walPath)) unlinkSync(walPath)
     }
-    console.log("  ✅ Database reset complete. Run 'fw dev' or 'fw db migrate' to recreate.\n")
+    console.log("zorux db migrate' to recreate.\n")
 
   } else if (subcmd === "migrate") {
     console.log("\n  Running migrations...\n")
@@ -65,7 +65,7 @@ export async function dbCommand(args: string[]) {
           // Read the last migration to get previous models
           const files = listMigrationFiles(rootDir)
           const oldModels = currentModels // diff against current for now
-          console.log("  ℹ Model changes detected. Run 'fw make migration <name>' to create a migration.")
+          console.log("zorux make migration <name>' to create a migration.")
         }
       }
 
@@ -148,10 +148,10 @@ export async function dbCommand(args: string[]) {
 
   } else {
     console.log("Usage:")
-    console.log("  fw db reset                  # Delete database file")
-    console.log("  fw db migrate [--auto]       # Run pending migrations")
-    console.log("  fw db rollback               # Rollback last batch")
-    console.log("  fw db status                 # Show migration status")
-    console.log("  fw db schema dump            # Dump current DB schema to db/schema.sql")
+    console.log("zorux db reset                  # Delete database file")
+    console.log("zorux db migrate [--auto]       # Run pending migrations")
+    console.log("zorux db rollback               # Rollback last batch")
+    console.log("zorux db status                 # Show migration status")
+    console.log("zorux db schema dump            # Dump current DB schema to db/schema.sql")
   }
 }

@@ -280,8 +280,8 @@ export async function scaffoldCommand(args: string[]) {
       console.log("    " + key.padEnd(15) + scaffold.description)
     }
     console.log("")
-    console.log("  Usage: fw scaffold <type> [name]")
-    console.log("  Example: fw scaffold forum my-forum")
+    console.log("zorux scaffold <type> [name]")
+    console.log("zorux scaffold forum my-forum")
     console.log("")
     return
   }
@@ -353,6 +353,6 @@ export async function scaffoldCommand(args: string[]) {
 
   console.log("\n  Next steps:")
   console.log("    cd " + name)
-  console.log("    fw dev")
+  console.log("zorux dev")
   console.log("")
 }

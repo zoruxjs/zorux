@@ -27,7 +27,7 @@ export function docsCommand(args: string[]) {
 
   if (term === "--list" || term === "list" || term === "--help" || term === "help") {
     console.log("\n  Zorux Documentation\n")
-    console.log("  Usage: fw docs <topic>\n")
+    console.log("zorux docs <topic>\n")
     console.log("  Available topics:")
     for (const [key, file] of Object.entries(DOC_MAP)) {
       const label = file.replace(".md", "").replace(/-/g, " ")
@@ -52,5 +52,5 @@ export function docsCommand(args: string[]) {
   console.log("  Zorux FRAMEWORK — GETTING STARTED")
   console.log("=".repeat(60) + "\n")
   console.log(defaultContent)
-  console.log("\n  Run 'fw docs --list' for all topics\n")
+  console.log("zorux docs --list' for all topics\n")
 }

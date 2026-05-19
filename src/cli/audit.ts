@@ -125,7 +125,7 @@ export async function auditCommand() {
   console.log("  Score: " + score + "% (" + passed + "/" + total + " checks passed)")
   if (issues > 0) {
     console.log("  Issues found: " + issues)
-    console.log("  \u2139  Run 'fw test --security' to generate security tests")
+    console.log("zorux test --security' to generate security tests")
   } else {
     console.log("  \u2705 All checks passed!")
   }

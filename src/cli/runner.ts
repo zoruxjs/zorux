@@ -9,13 +9,13 @@ export async function runnerCommand(args: string[]) {
   const scriptName = args[1]
 
   if (!scriptName) {
-    console.log("Usage: fw runner <script>")
+    console.log("zorux runner <script>")
     console.log("  Runs a script in the app context.")
     console.log("  Script receives: config, models, platform, db, col")
     console.log("")
     console.log("  Example:")
     console.log('    echo \'console.log("Users:", await col("User").count())\' > scripts/stats.ts')
-    console.log("    fw runner scripts/stats.ts")
+    console.log("zorux runner scripts/stats.ts")
     return
   }
 

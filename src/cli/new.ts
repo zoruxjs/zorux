@@ -87,7 +87,7 @@ export async function newCommand(name: string, options: { api?: boolean; web?: b
       genMobileCommand(projectDir)
     } catch (err: any) {
       console.log("  - Mobile generation error:", err.message)
-      console.log("  - You can run 'fw gen mobile' later")
+      console.log("zorux gen mobile' later")
     }
   }
 

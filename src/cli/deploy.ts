@@ -126,7 +126,7 @@ export function deployCommand(args: string[]) {
     process.exit(1)
   }
   if (!existsSync(join(rootDir, "package.json"))) {
-    console.error("[Zorux] No package.json found. Run 'fw new' first.")
+    console.error("zorux new' first.")
     process.exit(1)
   }
 

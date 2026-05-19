@@ -15,8 +15,8 @@ export async function makeCommand(args: string[]) {
       const name = args[2]
       const handlers = args.slice(3)
       if (!name || handlers.length === 0) {
-        console.error("Usage: fw make action <name> <handler1> [handler2 ...]")
-        console.error("  Example: fw make action posts publish unpublish archive")
+        console.error("zorux make action <name> <handler1> [handler2 ...]")
+        console.error("zorux make action posts publish unpublish archive")
         process.exit(1)
       }
 
@@ -43,8 +43,8 @@ export async function makeCommand(args: string[]) {
     case "job": {
       const name = args[2]
       if (!name) {
-        console.error("Usage: fw make job <name>")
-        console.error("  Example: fw make job send-welcome-email")
+        console.error("zorux make job <name>")
+        console.error("zorux make job send-welcome-email")
         process.exit(1)
       }
 
@@ -68,8 +68,8 @@ export async function makeCommand(args: string[]) {
     case "migration": {
       const name = args.slice(2).join("_")
       if (!name) {
-        console.error("Usage: fw make migration <name>")
-        console.error("  Example: fw make migration add_users_table")
+        console.error("zorux make migration <name>")
+        console.error("zorux make migration add_users_table")
         process.exit(1)
       }
 
@@ -95,8 +95,8 @@ export async function down(adapter: DatabaseAdapter): Promise<void> {
 
     default:
       console.log("Usage:")
-      console.log("  fw make action <name> <handler1> [handler2 ...]")
-      console.log("  fw make job <name>")
-      console.log("  fw make migration <name>")
+      console.log("zorux make action <name> <handler1> [handler2 ...]")
+      console.log("zorux make job <name>")
+      console.log("zorux make migration <name>")
   }
 }
