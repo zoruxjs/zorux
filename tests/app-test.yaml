@@ -1,0 +1,48 @@
+name: test-app
+type: api
+database:
+  provider: sqlite
+  url: ":memory:"
+auth:
+  model: user
+  registration: open
+  roles: [admin, editor, viewer]
+  defaultRole: viewer
+models:
+  user:
+    fields:
+      name: { type: string, required: true }
+      email: { type: string, required: true, unique: true }
+      role: { type: string, enum: [admin, editor, viewer], default: viewer }
+    auth: email
+    timestamps: true
+    policies:
+      create: user.role == "admin"
+      read: "*"
+      update: user.role == "admin" || resource.id == user.id
+      delete: user.role == "admin"
+    fieldPolicies:
+      - field: role
+        condition: user.role == "admin"
+  post:
+    fields:
+      title: { type: string, required: true }
+      content: { type: text }
+      author: user
+      published: { type: boolean, default: false }
+      views: { type: number, default: 0 }
+    timestamps: true
+    softDelete: true
+    policies:
+      create: "authenticated"
+      read: "*"
+      update: user.role == "admin" || resource.authorId == user.id
+      delete: user.role == "admin"
+  comment:
+    fields:
+      content: { type: text, required: true }
+      post: post
+      author: user
+    timestamps: true
+email:
+  provider: fake
