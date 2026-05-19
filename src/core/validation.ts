@@ -85,7 +85,7 @@ const themeDefSchema = z.object({
   mode: z.enum(['light', 'dark', 'auto']).optional().default('auto'),
   font: z.string().optional(),
   radius: z.string().optional(),
-  framework: z.enum(['default', 'tailwind', 'antd', 'mui', 'chakra', 'mantine', 'headless']).optional().default('default'),
+  framework: z.enum(['default', 'tailwind', 'daisyui', 'antd', 'mui', 'chakra', 'mantine', 'headless']).optional().default('default'),
 }).optional()
 
 export const appConfigSchema = z.object({

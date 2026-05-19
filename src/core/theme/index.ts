@@ -1,10 +1,12 @@
 import type { ThemeAdapter, ThemeConfig, UIFramework } from "./types"
 import { tailwindAdapter } from "./tailwind"
+import { daisyUIAdapter } from "./daisyui"
 
 export type { ThemeAdapter, ThemeConfig, UIFramework } from "./types"
 
 const adapters: Record<string, ThemeAdapter> = {
   tailwind: tailwindAdapter,
+  daisyui: daisyUIAdapter,
 }
 
 // Lazy-loaded adapters (dependencies may not be installed)
@@ -16,6 +18,7 @@ async function loadAdapter(name: string): Promise<ThemeAdapter | null> {
       case "chakra": return (await import("./chakra")).chakraAdapter
       case "mantine": return (await import("./mantine")).mantineAdapter
       case "headless": return (await import("./headless")).headlessAdapter
+      case "daisyui": return (await import("./daisyui")).daisyUIAdapter
     }
   } catch {}
   return null
