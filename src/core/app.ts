@@ -176,15 +176,16 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
     }
   }
 
-  // Apply plugin routes
-  await applyPluginRoutes(app, platform, plugins)
-
+  // Web admin routes (can be overridden by plugins)
   if (config.type === "web" || config.type === "fullstack") {
     try {
       const { createWebRouter } = await import("../views/pages/web-router")
       await createWebRouter(platform, app)
     } catch {}
   }
+
+  // Apply plugin routes (registered last so they can override admin routes)
+  await applyPluginRoutes(app, platform, plugins)
 
   // Plugin startup hook
   await applyPluginStart(platform, plugins)

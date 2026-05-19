@@ -344,7 +344,8 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
     return c.redirect("/admin/emails")
   })
 
-  app.get("/", (c) => c.redirect("/admin"))
+  // Redirect / to /admin only if no plugin has registered a handler for /
+  // Plugins registered after web-router can override this
 }
 
 async function getAuthUser(c: any, auth: any): Promise<any | null> {
