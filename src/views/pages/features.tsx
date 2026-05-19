@@ -1,95 +1,67 @@
 import type { FC } from "hono/jsx"
 import { Layout } from "../components/Layout"
 
-interface Feature {
-  id: number
-  key: string
-  name: string
-  description: string
-  enabled: number
-  created_at: string
-}
-
-interface FeaturePageProps {
-  user?: any
-  models?: { tableName: string }[]
-  features: Feature[]
-}
+interface Feature { id: number; key: string; name: string; description: string; enabled: number; created_at: string }
+interface FeaturePageProps { user?: any; models?: any[]; features: Feature[] }
 
 export const FeaturePage: FC<FeaturePageProps> = ({ user, models, features }) => (
   <Layout title="Feature Flags - Admin" user={user} models={models}>
-    <div style="margin-bottom:1.5rem">
-      <div class="flex flex-gap" style="align-items:center;justify-content:space-between">
-        <div>
-          <h1 style="margin:0">Feature Flags</h1>
-          <p class="text-muted" style="margin:0.25rem 0 0">Toggle features on/off without deploying</p>
-        </div>
-      </div>
-    </div>
+    <h2 class="section-title">Feature Flags</h2>
+    <p class="section-desc">Toggle features on/off without deploying</p>
 
-    <div class="card">
-      <div style="padding:1rem">
-        {features.length === 0 ? (
-          <div style="text-align:center;padding:2rem;color:var(--muted,#666)">
-            <p>No feature flags created yet.</p>
-            <p class="text-sm">Flags can be managed via the API or created below.</p>
-          </div>
-        ) : (
-          <table style="width:100%">
+    <div class="card" style="background:var(--b1);border:1px solid color-mix(in oklch, var(--bc) 8%, transparent);border-radius:var(--radius-box);padding:1rem">
+      {features.length === 0 ? (
+        <div style="text-align:center;padding:2rem;opacity:0.4">
+          <p>No feature flags created yet.</p>
+          <p class="text-sm">Create one below or via the API.</p>
+        </div>
+      ) : (
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
             <thead>
-              <tr>
-                <th style="text-align:left">Flag</th>
-                <th style="text-align:left">Description</th>
-                <th style="text-align:center">Status</th>
-                <th style="text-align:center">Actions</th>
-              </tr>
+              <tr><th class="text-xs opacity-50 uppercase tracking-wider">Flag</th><th class="text-xs opacity-50 uppercase tracking-wider">Description</th><th class="text-xs opacity-50 uppercase tracking-wider" style="text-align:center">Status</th><th class="text-xs opacity-50 uppercase tracking-wider" style="text-align:center">Actions</th></tr>
             </thead>
             <tbody>
               {features.map(f => (
                 <tr>
-                  <td style="padding:8px 0">
-                    <strong>{f.name}</strong>
-                    <div class="text-muted" style="font-size:0.8rem">{f.key}</div>
-                  </td>
-                  <td style="padding:8px 0">{f.description || "-"}</td>
-                  <td style="padding:8px 0;text-align:center">
-                    {f.enabled ? <span class="badge badge-success" style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8rem">ON</span> : <span class="badge" style="background:#64748b;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8rem">OFF</span>}
-                  </td>
-                  <td style="padding:8px 0;text-align:center">
-                    <form method="POST" action={"/admin/features/" + f.key + "/toggle"} style="display:inline" data-turbo="false">
-                      <button class="btn btn-sm" style={f.enabled ? "background:#64748b;color:#fff" : "background:#22c55e;color:#fff"}>{f.enabled ? "Disable" : "Enable"}</button>
-                    </form>
-                    <form method="POST" action={"/admin/features/" + f.key + "/delete"} style="display:inline" data-turbo="false">
-                      <button class="btn btn-sm btn-danger">Delete</button>
-                    </form>
+                  <td class="text-sm"><strong>{f.name}</strong><div class="text-xs font-mono opacity-40">{f.key}</div></td>
+                  <td class="text-sm">{f.description || <span class="opacity-40">-</span>}</td>
+                  <td style="text-align:center">{f.enabled ? <span class="badge badge-success badge-xs">ON</span> : <span class="badge badge-soft badge-xs">OFF</span>}</td>
+                  <td style="text-align:center">
+                    <div class="flex gap-2" style="justify-content:center">
+                      <form method="POST" action={"/admin/features/" + f.key + "/toggle"} style="display:inline" data-turbo="false">
+                        <button class="btn btn-xs" style={f.enabled ? "" : "background:var(--su);color:var(--suc);border:none"}>{f.enabled ? "Disable" : "Enable"}</button>
+                      </form>
+                      <form method="POST" action={"/admin/features/" + f.key + "/delete"} style="display:inline" data-turbo="false">
+                        <button class="btn btn-soft btn-error btn-xs">Delete</button>
+                      </form>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        )}
-      </div>
+        </div>
+      )}
     </div>
 
-    <div class="card" style="margin-top:1.5rem">
-      <div class="card-header"><h2>Create New Flag</h2></div>
-      <form method="POST" action="/admin/features/create" style="padding:1rem" data-turbo="false">
-        <div class="flex flex-gap" style="flex-wrap:wrap">
-          <div style="flex:1;min-width:200px">
-            <label for="key" class="text-sm">Key</label>
-            <input type="text" id="key" name="key" placeholder="new-feature" class="input" required />
+    <div class="card" style="margin-top:1.5rem;background:var(--b1);border:1px solid color-mix(in oklch, var(--bc) 8%, transparent);border-radius:var(--radius-box);padding:1.25rem">
+      <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:1rem">Create New Flag</h3>
+      <form method="POST" action="/admin/features/create" data-turbo="false">
+        <div class="flex flex-wrap gap-3" style="align-items:end">
+          <div style="flex:1;min-width:180px">
+            <label class="label" style="font-size:0.8rem;font-weight:500;margin-bottom:0.25rem">Key</label>
+            <input type="text" name="key" placeholder="new-feature" required class="input" style="width:100%;padding:0.5rem 0.75rem;border:1px solid color-mix(in oklch, var(--bc) 12%, transparent);border-radius:var(--radius-field);background:var(--b2);font-size:0.85rem" />
           </div>
-          <div style="flex:1;min-width:200px">
-            <label for="name" class="text-sm">Name</label>
-            <input type="text" id="name" name="name" placeholder="New Feature" class="input" required />
+          <div style="flex:1;min-width:180px">
+            <label class="label" style="font-size:0.8rem;font-weight:500;margin-bottom:0.25rem">Name</label>
+            <input type="text" name="name" placeholder="New Feature" required class="input" style="width:100%;padding:0.5rem 0.75rem;border:1px solid color-mix(in oklch, var(--bc) 12%, transparent);border-radius:var(--radius-field);background:var(--b2);font-size:0.85rem" />
           </div>
-          <div style="flex:1;min-width:200px">
-            <label for="description" class="text-sm">Description</label>
-            <input type="text" id="description" name="description" placeholder="Describe this feature" class="input" />
+          <div style="flex:1;min-width:180px">
+            <label class="label" style="font-size:0.8rem;font-weight:500;margin-bottom:0.25rem">Description</label>
+            <input type="text" name="description" placeholder="Describe this feature" class="input" style="width:100%;padding:0.5rem 0.75rem;border:1px solid color-mix(in oklch, var(--bc) 12%, transparent);border-radius:var(--radius-field);background:var(--b2);font-size:0.85rem" />
           </div>
-          <div style="display:flex;align-items:flex-end">
-            <button type="submit" class="btn btn-primary">Create</button>
-          </div>
+          <button type="submit" class="btn btn-primary" style="align-self:flex-end">Create</button>
         </div>
       </form>
     </div>

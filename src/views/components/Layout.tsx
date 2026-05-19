@@ -13,21 +13,22 @@ interface LayoutProps {
 export const Layout: FC<LayoutProps> = ({ title, user, models, children }) => {
   const base = "/admin/"
   return (
-    <html lang="en" data-theme="dark">
+    <html lang="en" data-theme="light">
       <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="theme-color" content="#0f172a" />
+        <meta name="theme-color" content="#ffffff" />
         <title>{title}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5" />
         <link rel="stylesheet" href={"/static/Zorux.css" + (CB ? "?v=" + CB : "")} />
         <script src={"/static/turbo.js" + (CB ? "?v=" + CB : "")}></script>
         <script>{`
 (function(){
-var t=localStorage.getItem("Zorux-theme")||"dark"
+var t=localStorage.getItem("Zorux-theme")||"light"
 document.documentElement.setAttribute("data-theme",t)
 window.__setTheme=function(t){localStorage.setItem("Zorux-theme",t);document.documentElement.setAttribute("data-theme",t)
-var b=document.getElementById("theme-btn");if(b)b.innerHTML=t==="dark"?'<span>\\u2600</span>':'<span>\\uD83C\\uDF19</span>'}
-window.__toggleTheme=function(){window.__setTheme(document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark")}
+var b=document.getElementById("theme-btn");if(b)b.innerHTML=t==="light"?'<span>\\uD83C\\uDF19</span>':'<span>\\u2600</span>'}
+window.__toggleTheme=function(){var c=document.documentElement.getAttribute("data-theme");window.__setTheme(c==="light"?"dark":"light")}
 var TOKEN=(document.cookie.match(/token=([^;]+)/)||[])[1]
 if(TOKEN){
 function loadN(){fetch("/api/notifications",{headers:{Authorization:"Bearer "+TOKEN}}).then(function(r){return r.json()}).then(function(d){
@@ -44,69 +45,68 @@ loadN();setInterval(loadN,30000)
 `}</script>
       </head>
       <body>
-        <div class="app-shell">
-          <aside class="sidebar">
+        <div class="drawer">
+          <aside class="drawer-side">
             <div class="sidebar-logo">
-              <svg width="22" height="22" viewBox="0 0 100 100" style="flex-shrink:0"><rect width="100" height="100" rx="20" fill="#3b82f6"/><text x="50" y="68" text-anchor="middle" fill="white" font-size="50" font-weight="bold" font-family="system-ui">Z</text></svg>
+              <svg width="24" height="24" viewBox="0 0 100 100" style="flex-shrink:0"><rect width="100" height="100" rx="20" fill="var(--p)"/><text x="50" y="68" text-anchor="middle" fill="var(--pc)" font-size="50" font-weight="bold" font-family="system-ui">Z</text></svg>
               Zorux
             </div>
             <nav class="sidebar-nav">
-              <div class="sidebar-group">
-                <div class="sidebar-group-title">Admin</div>
-                <a href="/admin" class="sidebar-link">Dashboard</a>
-                {models?.map(m => (
-                  <a href={base + m.tableName} class="sidebar-link">{m.plural || m.name}</a>
-                ))}
-              </div>
-              <div class="sidebar-group" style="margin-top:0.5rem">
-                <div class="sidebar-group-title">System</div>
-                <a href="/admin/features" class="sidebar-link">Feature Flags</a>
-                <a href="/admin/emails" class="sidebar-link">Email Sandbox</a>
-                <a href="/admin/monitor" class="sidebar-link">Monitor</a>
-              </div>
+              <div class="sidebar-label">Admin</div>
+              <a href="/admin" class="sidebar-link">Dashboard</a>
+              {models?.map(m => (
+                <a href={base + m.tableName} class="sidebar-link">{m.plural || m.name}</a>
+              ))}
+              <div class="sidebar-label" style="margin-top:1rem">System</div>
+              <a href="/admin/features" class="sidebar-link">Feature Flags</a>
+              <a href="/admin/emails" class="sidebar-link">Email Sandbox</a>
+              <a href="/admin/monitor" class="sidebar-link">Monitor</a>
             </nav>
-            <div style="padding:0.75rem 1.25rem;border-top:1px solid rgba(255,255,255,0.08);margin-top:auto">
+            <div style="padding:0.75rem;margin-top:auto;border-top:1px solid color-mix(in oklch, var(--bc) 8%, transparent)">
               {user ? (
-                <div style="font-size:0.8rem">
-                  <div style="color:var(--text-sidebar);font-weight:500">{user.name}</div>
-                  <a href="/logout" style="color:var(--text-sidebar);opacity:0.6;font-size:0.75rem">Logout</a>
+                <div class="flex items-center gap-2" style="padding:0 0.25rem">
+                  <div style="width:32px;height:32px;border-radius:999px;background:var(--p);display:grid;place-items:center;font-size:0.8rem;font-weight:700;color:var(--pc)">{(user.name || "U")[0]}</div>
+                  <div>
+                    <div style="font-size:0.82rem;font-weight:500;color:var(--bc)">{user.name}</div>
+                    <a href="/logout" style="font-size:0.72rem;opacity:0.4;color:var(--bc);text-decoration:none">Logout</a>
+                  </div>
                 </div>
               ) : (
-                <a href="/login" style="color:var(--text-sidebar)">Login</a>
+                <a href="/login" class="sidebar-link" style="justify-content:center">Login</a>
               )}
             </div>
           </aside>
 
-          <header class="app-header">
-            <div class="header-title">{title}</div>
-            <div class="header-right">
-              <button id="theme-btn" onclick="__toggleTheme()" class="btn btn-ghost btn-sm" title="Toggle theme">☀️</button>
-              <div class="notif-wrapper">
-                <button id="notif-bell" onclick="document.getElementById('notif-dropdown').classList.toggle('visible')" class="notif-btn">
-                  🔔
-                  <span id="notif-count" class="notif-count"></span>
-                </button>
-                <div id="notif-dropdown" class="notif-dropdown">
-                  <div class="notif-header">
-                    <strong>Notifications</strong>
-                    <button onclick="markAllN()" class="btn btn-ghost btn-sm">Mark all read</button>
-                  </div>
-                  <div id="notif-list"></div>
-                  <div class="notif-footer">
-                    <a href="/admin/notifications">View all</a>
+          <div class="drawer-content">
+            <div class="navbar">
+              <div class="navbar-title">{title}</div>
+              <div class="navbar-end">
+                <button id="theme-btn" onclick="__toggleTheme()" class="btn btn-ghost btn-sm" title="Toggle theme" style="border:none;font-size:1.1rem;padding:0.25rem 0.5rem;border-radius:var(--radius-field)">🌙</button>
+                <div class="notif-wrapper">
+                  <button id="notif-bell" onclick="document.getElementById('notif-dropdown').classList.toggle('visible')" class="btn btn-ghost btn-sm" style="border:none;font-size:1.1rem;padding:0.25rem 0.5rem;border-radius:var(--radius-field);position:relative">
+                    🔔
+                    <span id="notif-count" class="notif-count"></span>
+                  </button>
+                  <div id="notif-dropdown" class="notif-dropdown">
+                    <div style="padding:0.75rem 1rem;border-bottom:1px solid color-mix(in oklch, var(--bc) 8%, transparent);display:flex;justify-content:space-between;align-items:center">
+                      <strong style="font-size:0.85rem">Notifications</strong>
+                      <button onclick="markAllN()" class="btn btn-ghost btn-xs">Mark all read</button>
+                    </div>
+                    <div id="notif-list"></div>
+                    <div style="padding:0.5rem;text-align:center;border-top:1px solid color-mix(in oklch, var(--bc) 8%, transparent)">
+                      <a href="/admin/notifications" style="font-size:0.78rem;opacity:0.5;text-decoration:none">View all</a>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </header>
-
-          <main class="app-content">
-            {children}
-          </main>
+            <main class="main-content">
+              {children}
+            </main>
+          </div>
         </div>
         <script>{`
 document.addEventListener("click",function(e){var dd=document.getElementById("notif-dropdown");if(dd&&!e.target.closest(".notif-wrapper"))dd.classList.remove("visible")})
-document.addEventListener("click",function(e){var dd=document.getElementById("notif-dropdown");if(dd&&dd.classList.contains("visible"))dd.style.display="block";else if(dd)dd.style.display="none"})
 `}</script>
       </body>
     </html>

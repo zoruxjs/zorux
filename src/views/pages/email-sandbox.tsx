@@ -4,50 +4,40 @@ import type { StoredEmail } from "../../core/email"
 
 export const EmailSandboxList: FC<{ emails: StoredEmail[]; models?: any[] }> = ({ emails, models }) => (
   <Layout title="Email Sandbox - Admin" models={models}>
-    <div class="flex flex-gap flex-between" style="margin-bottom:1rem">
+    <div class="flex items-center justify-between mb-4">
       <div>
-        <h2 style="margin:0;font-size:1.25rem">Email Sandbox</h2>
-        <p class="text-muted text-sm" style="margin:0.25rem 0 0">Fake email provider — no real emails are sent</p>
+        <h2 class="section-title">Email Sandbox</h2>
+        <p class="section-desc">{emails.length} captured · Fake provider, no real emails sent</p>
       </div>
-      <div class="btn-group">
-        <span class="text-sm text-muted" style="align-self:center">{emails.length} captured</span>
-        {emails.length > 0 && (
-          <form method="POST" action="/admin/emails/clear" style="display:inline">
-            <button class="btn btn-danger btn-sm">Clear All</button>
-          </form>
-        )}
-      </div>
+      {emails.length > 0 && (
+        <form method="POST" action="/admin/emails/clear" style="display:inline">
+          <button class="btn btn-soft btn-error btn-sm">Clear All</button>
+        </form>
+      )}
     </div>
 
-    <div class="card email-list">
+    <div class="card" style="background:var(--b1);border:1px solid color-mix(in oklch, var(--bc) 8%, transparent);border-radius:var(--radius-box);padding:1rem">
       {emails.length === 0 ? (
-        <div class="empty">
-          <div class="empty-icon">📬</div>
-          <h3>No emails captured</h3>
-          <p>Send an email via <code>sendEmail()</code> in an action or job to see it here.</p>
+        <div style="text-align:center;padding:3rem 1rem;opacity:0.4">
+          <div style="font-size:2rem;margin-bottom:0.75rem">📬</div>
+          <h3 style="font-weight:600;margin-bottom:0.25rem">No emails captured</h3>
+          <p style="font-size:0.85rem">Use <code>sendEmail()</code> in an action or job</p>
         </div>
       ) : (
-        <div class="table-wrap">
-          <table>
+        <div class="overflow-x-auto">
+          <table class="table table-sm">
             <thead>
-              <tr>
-                <th>#</th>
-                <th>To</th>
-                <th>Subject</th>
-                <th>Time</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
+              <tr><th class="text-xs opacity-50 uppercase tracking-wider">#</th><th class="text-xs opacity-50 uppercase tracking-wider">To</th><th class="text-xs opacity-50 uppercase tracking-wider">Subject</th><th class="text-xs opacity-50 uppercase tracking-wider">Time</th><th class="text-xs opacity-50 uppercase tracking-wider">Status</th><th></th></tr>
             </thead>
             <tbody>
               {[...emails].reverse().map(e => (
                 <tr>
-                  <td>{e.id}</td>
-                  <td>{Array.isArray(e.to) ? e.to.join(", ") : e.to}</td>
-                  <td>{e.subject}</td>
-                  <td class="text-muted text-sm">{new Date(e.sentAt).toLocaleTimeString()}</td>
-                  <td>{e.read ? <span class="badge badge-success">read</span> : <span class="badge badge-info">new</span>}</td>
-                  <td><a href={"/admin/emails/" + e.id} class="btn btn-primary btn-sm">View</a></td>
+                  <td class="text-sm font-mono opacity-60">{e.id}</td>
+                  <td class="text-sm">{Array.isArray(e.to) ? e.to.join(", ") : e.to}</td>
+                  <td class="text-sm">{e.subject}</td>
+                  <td class="text-sm opacity-40">{new Date(e.sentAt).toLocaleTimeString()}</td>
+                  <td>{e.read ? <span class="badge badge-soft badge-success badge-xs">read</span> : <span class="badge badge-soft badge-info badge-xs">new</span>}</td>
+                  <td><a href={"/admin/emails/" + e.id} class="btn btn-soft btn-primary btn-xs">View</a></td>
                 </tr>
               ))}
             </tbody>
@@ -60,13 +50,12 @@ export const EmailSandboxList: FC<{ emails: StoredEmail[]; models?: any[] }> = (
 
 export const EmailSandboxDetail: FC<{ email: StoredEmail; models?: any[] }> = ({ email, models }) => (
   <Layout title={"Email #" + email.id + " - Sandbox"} models={models}>
-    <div style="margin-bottom:1rem">
-      <a href="/admin/emails" class="text-muted text-sm" style="text-decoration:none">← Back to inbox</a>
-      <h2 style="margin:0.5rem 0 0;font-size:1.25rem">Email #{email.id}</h2>
+    <div class="mb-4">
+      <a href="/admin/emails" class="text-sm opacity-50" style="text-decoration:none">← Back to inbox</a>
+      <h2 class="section-title">Email #{email.id}</h2>
     </div>
-
-    <div class="card">
-      <dl class="email-detail-grid">
+    <div class="card" style="background:var(--b1);border:1px solid color-mix(in oklch, var(--bc) 8%, transparent);border-radius:var(--radius-box);padding:1.25rem">
+      <dl class="email-meta">
         <dt>From</dt><dd>{email.from}</dd>
         <dt>To</dt><dd>{Array.isArray(email.to) ? email.to.join(", ") : email.to}</dd>
         <dt>Subject</dt><dd>{email.subject}</dd>
@@ -74,25 +63,24 @@ export const EmailSandboxDetail: FC<{ email: StoredEmail; models?: any[] }> = ({
       </dl>
 
       {email.html ? (
-        <div class="email-preview-box" style="margin-top:1rem">
-          <div class="email-preview-header">
+        <div style="margin-top:1rem;border:1px solid color-mix(in oklch, var(--bc) 8%, transparent);border-radius:var(--radius-field);overflow:hidden">
+          <div style="padding:0.4rem 0.75rem;font-size:0.78rem;opacity:0.4;background:var(--b2);display:flex;justify-content:space-between;align-items:center">
             <span>HTML Preview</span>
           </div>
-          <iframe src={"/admin/emails/" + email.id + "/preview"} class="email-preview-iframe" title="Email preview" />
+          <iframe src={"/admin/emails/" + email.id + "/preview"} class="email-iframe" title="Email preview" />
         </div>
       ) : null}
 
       {email.text ? (
         <div style="margin-top:1rem">
-          <strong class="text-sm">Text body:</strong>
-          <pre class="email-text-body">{email.text}</pre>
+          <div style="font-size:0.8rem;font-weight:600;margin-bottom:0.5rem">Text body</div>
+          <pre class="email-text">{email.text}</pre>
         </div>
       ) : null}
     </div>
-
-    <div class="btn-group" style="margin-top:1rem">
+    <div class="flex gap-2 mt-4">
       <form method="POST" action={"/admin/emails/" + email.id + "/delete"} style="display:inline">
-        <button class="btn btn-danger btn-sm">Delete</button>
+        <button class="btn btn-soft btn-error btn-sm">Delete</button>
       </form>
     </div>
   </Layout>
