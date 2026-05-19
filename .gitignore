@@ -1,9 +1,11 @@
 ﻿node_modules/
 dist/
-*.db
-*.db-wal
-*.db-shm
+test-*.db*
 test-migrations/
-test-seed.db*
-.env
+temp-debug.js
+benchmark.ts
+tests/_run.log
 .DS_Store
+*.log
+.env
+.env.local
