@@ -1,0 +1,39 @@
+{
+  "name": "zorux",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "AI-first web framework: API, Web, Mobile — minimal tokens, maximum output",
+  "bin": {
+    "zorux": "./dist/index.js"
+  },
+  "main": "./dist/core/index.js",
+  "exports": {
+    ".": "./dist/core/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "build": "bun build ./src/cli/index.ts --outdir=./dist --target=bun --external=mongodb --external=postgres --external=mysql2 --external=mysql2/promise --external=ioredis --external=memcached --external=@aws-sdk/lib-dynamodb --external=@aws-sdk/client-dynamodb --external=stripe --external=resend --external=@sendgrid/mail --external=nodemailer --external=@aws-sdk/client-s3 --external=graphql --external=meilisearch && node -e \"require('fs').writeFileSync('dist/index.js','#!/usr/bin/env bun\\n'+require('fs').readFileSync('dist/index.js','utf-8'))\"",
+    "dev": "bun --watch ./src/cli/index.ts",
+    "prepublishOnly": "bun run build",
+    "test": "bun test",
+    "test:integration": "bun test tests/integration.test.ts",
+    "test:edge": "bun test tests/edge.test.ts",
+    "test:fuzz": "bun test tests/fuzz.test.ts",
+    "test:concurrent": "bun test tests/concurrent.test.ts"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "drizzle-orm": "^0.33.0",
+    "hono": "^4.5.0",
+    "js-yaml": "^4.1.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "bun-types": "latest",
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Zorux Mobile",
+    "slug": "Zorux-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "Zorux",
+    "plugins": ["expo-router", "expo-secure-store"],
+    "ios": { "supportsTablet": true },
+    "android": { "adaptiveIcon": { "backgroundColor": "#ffffff" } }
+  }
+}
