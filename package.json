@@ -1,6 +1,6 @@
 {
   "name": "zorux",
-  "version": "0.1.11",
+  "version": "0.2.0",
   "type": "module",
   "description": "AI-first web framework: API, Web, Mobile — minimal tokens, maximum output",
   "bin": {
