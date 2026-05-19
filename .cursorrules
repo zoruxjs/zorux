@@ -1,0 +1,51 @@
+# Zorux Rules for AI Coding Assistants
+# Place this in your project root for Cursor, Windsurf, or other AI editors.
+
+## Framework: Zorux
+
+You are building with Zorux — an AI-first full-stack framework where a single `app.yaml` generates everything.
+
+### Golden Rule
+Edit ONLY `app.yaml` to add models, fields, auth, policies, and relations.
+Do NOT create route files, database migrations, or config files.
+Zorux automatically generates:
+- REST API routes with CRUD + pagination + sort + search
+- Admin UI dashboard
+- OpenAPI/Swagger docs
+- GraphQL schema
+- Database tables
+
+### When the user asks to add a feature
+1. First check if it can be done by editing `app.yaml` only
+2. Only create `actions/*.ts` or `jobs/*.ts` for custom business logic
+3. Only create `plugins/*.ts` for third-party integrations not supported natively
+
+### Policy Syntax Reference
+```yaml
+policies:
+  create: "authenticated"           # Any logged-in user
+  read: "*"                         # Public 
+  update: 'user.role == "admin"'    # Role-based
+  delete: 'user.role == "admin" || resource.authorId == user.id'  # ABAC
+```
+
+### Model Field Types
+`string`, `text`, `int`, `float`, `boolean`, `ModelName` (creates relation)
+
+### Key Conventions
+- Relations: `author: user` → creates `authorId` column
+- Table names: `Post` → `posts`, `Category` → `categories`
+- Auth: `auth: email` on a model enables register/login endpoints
+- Soft delete: `softDelete: true` adds `deleted_at` + restore/permanent-delete
+
+### CLI Commands
+```bash
+zorux dev              # Start dev server with hot reload
+zorux gen mobile       # Generate Expo mobile app
+zorux gen desktop      # Generate Tauri desktop app
+zorux make action      # Create custom endpoint
+zorux make job         # Create background job
+zorux make migration   # Create migration file
+zorux db migrate       # Run pending migrations
+zorux test             # Run tests
+```

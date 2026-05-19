@@ -1,0 +1,57 @@
+You are working with the Zorux framework — an AI-first full-stack framework.
+
+## CORE RULE: One YAML file rules everything
+
+The single `app.yaml` file defines models, auth, database, plugins, and permissions. Do NOT create route files, migration scripts, or config files. Everything is inferred from the YAML.
+
+## How to build features
+
+### Adding a new model
+Edit `app.yaml` models section. Zorux auto-generates:
+- Database table with columns
+- CRUD API routes (GET/POST/PUT/DELETE)
+- Admin UI pages
+- OpenAPI spec
+- GraphQL schema
+
+### Adding auth to a model
+Set `auth: email` (or `auth: username`) on the model. Zorux auto-generates:
+- `/api/auth/register` and `/api/auth/login`
+- JWT token handling
+- Password hashing (bcrypt)
+- Session management
+
+### Adding OAuth
+Add social provider configs under `auth.social`. Zorux supports 35 providers: google, github, apple, discord, facebook, twitter, etc.
+
+### Adding policy / permissions
+Set `policies` on the model. Use ABAC expressions:
+- `"*"` — Public access
+- `"authenticated"` — Any logged-in user
+- `"admin"` — Specific role
+- `'user.role == "admin" || resource.authorId == user.id'` — Complex conditions
+
+### Adding a relation
+Use a model name as a field type: `author: user` → creates `authorId` FK column.
+
+### Adding soft delete
+Set `softDelete: true` on the model. Adds `deleted_at` + restore/permanent-delete endpoints.
+
+### Adding multi-tenancy
+Set `scoped: true` on the model. All queries are filtered by `X-Org-ID` header.
+
+## Architecture
+
+- **Bun** runtime + **Hono** HTTP framework
+- All routes are registered automatically from models
+- Auth middleware checks JWT from `Authorization: Bearer <token>` or `token` cookie
+- Policy engine evaluates ABAC expressions per-request
+- Optional deps (stripe, mongodb, postgres) are lazy `require()`'d — never at module scope
+
+## What NOT to do
+- ❌ Do NOT create separate route files (Zorux generates them)
+- ❌ Do NOT create migration files manually (use `zorux db migrate --auto`)
+- ❌ Do NOT install optional deps globally (they're lazy-loaded)
+
+## Available CLI
+`zorux new`, `zorux dev`, `zorux gen mobile|desktop|pwa|graphql`, `zorux db migrate|rollback`, `zorux make action|job|migration`, `zorux plugin add|list|remove`, `zorux test`, `zorux audit`
