@@ -171,7 +171,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
     recent.sort((a, b) => b.time?.localeCompare?.(a.time) || 0)
     const recentTop = recent.slice(0, 10)
 
-    return c.html(<Dashboard user={user} models={models} stats={stats} recent={recentTop} />)
+    return c.html(<Dashboard user={user} models={models} stats={stats} recent={recentTop} active="dashboard" />)
   })
 
   for (const model of models) {
@@ -192,13 +192,13 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
       const offset = (page - 1) * limit
       const { rows, total } = await col.search(searchFields, search, sort, order.toLowerCase(), limit, offset)
       const totalPages = Math.ceil(total / limit)
-      return c.html(<AdminList modelName={model.name} modelPlural={model.tableName} fields={fields} rows={rows as any[]} user={user} models={models} search={search} sort={sort} order={order.toLowerCase()} page={page} totalPages={totalPages} basePath={basePath} />)
+      return c.html(<AdminList modelName={model.name} modelPlural={model.tableName} fields={fields} rows={rows as any[]} user={user} models={models} search={search} sort={sort} order={order.toLowerCase()} page={page} totalPages={totalPages} basePath={basePath} active={model.tableName} />)
     })
 
     app.get(basePath + "/new", async (c) => {
       const user = await getAuthUser(c, auth)
       if (!user) return c.redirect("/login")
-      return c.html(<AdminForm modelName={model.name} modelPlural={model.tableName} fields={fields} isNew={true} user={user} models={models} />)
+      return c.html(<AdminForm modelName={model.name} modelPlural={model.tableName} fields={fields} isNew={true} user={user} models={models} active={model.tableName} />)
     })
 
     async function parseAdminForm(c: any, model: any): Promise<Record<string, any>> {
@@ -236,7 +236,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
         await col.insert(data)
         return c.redirect(basePath)
       } catch (err: any) {
-        return c.html(<AdminForm modelName={model.name} modelPlural={model.tableName} fields={fields} isNew={true} error={err.message} user={user} models={models} />)
+        return c.html(<AdminForm modelName={model.name} modelPlural={model.tableName} fields={fields} isNew={true} error={err.message} user={user} models={models} active={model.tableName} />)
       }
     })
 
@@ -246,7 +246,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
       const id = c.req.param("id")
       const row = await col.findById(id)
       if (!row) return c.redirect(basePath)
-      return c.html(<AdminForm modelName={model.name} modelPlural={model.tableName} fields={fields} values={row} isNew={false} user={user} models={models} />)
+      return c.html(<AdminForm modelName={model.name} modelPlural={model.tableName} fields={fields} values={row} isNew={false} user={user} models={models} active={model.tableName} />)
     })
 
     app.post(basePath + "/:id", async (c) => {
@@ -279,7 +279,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
       const { listFlags } = await import("../../core/features")
       const db = platform.database as any
       const features = listFlags(db) || []
-      return c.html(<FeaturePage user={user} models={models} features={features} />)
+      return c.html(<FeaturePage user={user} models={models} features={features} active="features" />)
     } catch { return c.redirect("/admin") }
   })
 
@@ -331,7 +331,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
       const { healthCheck, gatherMetrics } = await import("../../core/monitor")
       const health = healthCheck(platform)
       const metrics = gatherMetrics(platform)
-      return c.html(<MonitorPage user={user} models={models} health={health} metrics={metrics} />)
+      return c.html(<MonitorPage user={user} models={models} health={health} metrics={metrics} active="monitor" />)
     } catch {
       return c.redirect("/admin")
     }
@@ -342,7 +342,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
     const user = await getAuthUser(c, auth)
     if (!user) return c.redirect("/login")
     const emails = getStoredEmails()
-    return c.html(<EmailSandboxList emails={emails} models={models} />)
+    return c.html(<EmailSandboxList emails={emails} models={models} active="emails" />)
   })
 
   app.get("/admin/emails/:id", async (c) => {
@@ -351,7 +351,7 @@ export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
     const id = parseInt(c.req.param("id"))
     const email = getStoredEmail(id)
     if (!email) return c.redirect("/admin/emails")
-    return c.html(<EmailSandboxDetail email={email} models={models} />)
+    return c.html(<EmailSandboxDetail email={email} models={models} active="emails" />)
   })
 
   app.get("/admin/emails/:id/preview", async (c) => {

@@ -14,6 +14,7 @@ interface AdminListProps {
   page?: number
   totalPages?: number
   basePath?: string
+  active?: string
 }
 
 function qs(params: Record<string, string | undefined>): string {
@@ -38,7 +39,7 @@ function cell(val: any, type: string) {
   return String(val).length > 60 ? String(val).slice(0, 60) + "…" : String(val)
 }
 
-export const AdminList: FC<AdminListProps> = ({ modelName, modelPlural, fields, rows, user, models, search, sort, order, page, totalPages, basePath }) => {
+export const AdminList: FC<AdminListProps> = ({ modelName, modelPlural, fields, rows, user, models, search, sort, order, page, totalPages, basePath, active }) => {
   const currentSort = sort || "id"
   const currentOrder = order || "asc"
   const currentSearch = search || ""
@@ -66,7 +67,7 @@ export const AdminList: FC<AdminListProps> = ({ modelName, modelPlural, fields, 
   ])
 
   return (
-    <Layout title={modelName + " - Admin"} user={user} models={models}>
+    <Layout title={modelName + " - Admin"} user={user} models={models} active={active}>
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="section-title">{modelPlural}</h2>
@@ -114,12 +115,13 @@ interface AdminFormProps {
   error?: string
   user?: any
   models?: { tableName: string; name: string; plural: string }[]
+  active?: string
 }
 
-export const AdminForm: FC<AdminFormProps> = ({ modelName, modelPlural, fields, values, isNew, error, user, models }) => {
+export const AdminForm: FC<AdminFormProps> = ({ modelName, modelPlural, fields, values, isNew, error, user, models, active }) => {
   const hasFile = fields.some(f => f.type === "file" || f.type === "richtext")
   return (
-    <Layout title={(isNew ? "New" : "Edit") + " " + modelName + " - Admin"} user={user} models={models}>
+    <Layout title={(isNew ? "New" : "Edit") + " " + modelName + " - Admin"} user={user} models={models} active={active}>
       <div class="mb-4">
         <a href={"/admin/" + modelPlural} class="text-sm opacity-50" style="text-decoration:none">← Back to {modelPlural}</a>
         <h2 class="section-title">{isNew ? "New " + modelName : "Edit " + modelName}</h2>

@@ -1,10 +1,10 @@
 import type { FC } from "hono/jsx"
 import { Layout } from "../components/Layout"
 
-interface MonitorProps { user?: any; models?: any[]; health: any; metrics: any }
+interface MonitorProps { user?: any; models?: any[]; health: any; metrics: any; active?: string }
 
-export const MonitorPage: FC<MonitorProps> = ({ user, models, health, metrics }) => (
-  <Layout title="System Monitor - Admin" user={user} models={models}>
+export const MonitorPage: FC<MonitorProps> = ({ user, models, health, metrics, active }) => (
+  <Layout title="System Monitor - Admin" user={user} models={models} active={active}>
     <h2 class="section-title">System Monitor</h2>
     <p class="section-desc">Health, metrics, and system status</p>
 

@@ -2,8 +2,8 @@ import type { FC } from "hono/jsx"
 import { Layout } from "../components/Layout"
 import type { StoredEmail } from "../../core/email"
 
-export const EmailSandboxList: FC<{ emails: StoredEmail[]; models?: any[] }> = ({ emails, models }) => (
-  <Layout title="Email Sandbox - Admin" models={models}>
+export const EmailSandboxList: FC<{ emails: StoredEmail[]; models?: any[]; active?: string }> = ({ emails, models, active }) => (
+  <Layout title="Email Sandbox - Admin" models={models} active={active}>
     <div class="flex items-center justify-between mb-4">
       <div>
         <h2 class="section-title">Email Sandbox</h2>
@@ -48,8 +48,8 @@ export const EmailSandboxList: FC<{ emails: StoredEmail[]; models?: any[] }> = (
   </Layout>
 )
 
-export const EmailSandboxDetail: FC<{ email: StoredEmail; models?: any[] }> = ({ email, models }) => (
-  <Layout title={"Email #" + email.id + " - Sandbox"} models={models}>
+export const EmailSandboxDetail: FC<{ email: StoredEmail; models?: any[]; active?: string }> = ({ email, models, active }) => (
+  <Layout title={"Email #" + email.id + " - Sandbox"} models={models} active={active}>
     <div class="mb-4">
       <a href="/admin/emails" class="text-sm opacity-50" style="text-decoration:none">← Back to inbox</a>
       <h2 class="section-title">Email #{email.id}</h2>

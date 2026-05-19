@@ -7,11 +7,13 @@ interface LayoutProps {
   title: string
   user?: any
   models?: { name: string; tableName: string; plural: string }[]
+  active?: string
   children: any
 }
 
-export const Layout: FC<LayoutProps> = ({ title, user, models, children }) => {
+export const Layout: FC<LayoutProps> = ({ title, user, models, children, active }) => {
   const base = "/admin/"
+  const isActive = (p: string) => p === active ? "menu-active" : ""
   return (
     <html lang="en" data-theme="light">
       <head>
@@ -23,94 +25,91 @@ export const Layout: FC<LayoutProps> = ({ title, user, models, children }) => {
         <script src={"/static/turbo.js" + (CB ? "?v=" + CB : "")}></script>
         <script>{`
 (function(){
-var t=localStorage.getItem("Zorux-theme")||"light"
+var t=localStorage.getItem("zorux-theme")||"light"
 document.documentElement.setAttribute("data-theme",t)
-window.__setTheme=function(t){localStorage.setItem("Zorux-theme",t);document.documentElement.setAttribute("data-theme",t)}
+window.__setTheme=function(t){localStorage.setItem("zorux-theme",t);document.documentElement.setAttribute("data-theme",t)}
 window.__toggleTheme=function(){var c=document.documentElement.getAttribute("data-theme");window.__setTheme(c==="light"?"dark":"light")}
-var TOKEN=(document.cookie.match(/token=([^;]+)/)||[])[1]
-if(TOKEN){
-function loadN(){fetch("/api/notifications",{headers:{Authorization:"Bearer "+TOKEN}}).then(function(r){return r.json()}).then(function(d){
-var b=document.getElementById("notif-bell"),c=document.getElementById("notif-count")
+var TK=(document.cookie.match(/token=([^;]+)/)||[])[1]
+if(TK){
+function ld(){fetch("/api/notifications",{headers:{Authorization:"Bearer "+TK}}).then(function(r){return r.json()}).then(function(d){
+var b=document.getElementById("nf"),c=document.getElementById("nc")
 if(b&&c){c.textContent=d.unread||"";c.style.display=d.unread>0?"flex":"none"}
-var l=document.getElementById("notif-list")
-if(l&&d.notifications){l.innerHTML=d.notifications.slice(0,5).map(function(n){return '<div class="notif-item'+(n.read_at?' notif-read':'')+'" onclick="markN('+n.id+')"><div class="notif-title">'+n.title+'</div><div class="notif-body">'+(n.body||"")+'</div></div>'}).join("")}
+var l=document.getElementById("nl")
+if(l&&d.notifications){l.innerHTML=d.notifications.slice(0,5).map(function(n){return '<div class="notif-item'+(n.read_at?' notif-read':'')+'" onclick="mk('+n.id+')"><div class="notif-title">'+n.title+'</div><div class="notif-body">'+(n.body||"")+'</div></div>'}).join("")}
 }).catch(function(){})}
-window.markN=function(id){fetch("/api/notifications/"+id+"/read",{method:"PUT",headers:{Authorization:"Bearer "+TOKEN}}).then(function(){loadN()})}
-window.markAllN=function(){fetch("/api/notifications/read-all",{method:"POST",headers:{Authorization:"Bearer "+TOKEN}}).then(function(){loadN()})}
-loadN();setInterval(loadN,30000)
+window.mk=function(id){fetch("/api/notifications/"+id+"/read",{method:"PUT",headers:{Authorization:"Bearer "+TK}}).then(function(){ld()})}
+window.mkAll=function(){fetch("/api/notifications/read-all",{method:"POST",headers:{Authorization:"Bearer "+TK}}).then(function(){ld()})}
+ld();setInterval(ld,30000)
 }
 })()
 `}</script>
       </head>
       <body>
         <div class="drawer lg:drawer-open">
-          <input id="sidebar-toggle" type="checkbox" class="drawer-toggle" />
+          <input id="st" type="checkbox" class="drawer-toggle" />
           <div class="drawer-content flex flex-col">
-            <div class="navbar bg-base-100 border-b border-base-200 sticky top-0 z-20">
-              <div class="flex-1">
-                <label for="sidebar-toggle" class="btn btn-ghost btn-sm drawer-button lg:hidden">☰</label>
-                <span class="font-semibold text-sm">{title}</span>
+            <div class="navbar bg-base-100/80 border-b border-base-200 sticky top-0 z-20">
+              <div class="flex-1 flex items-center gap-2">
+                <label for="st" class="btn btn-ghost btn-sm drawer-button lg:hidden">☰</label>
+                <span class="font-semibold text-sm tracking-tight">{title}</span>
               </div>
-              <div class="flex gap-1 items-center">
-                <button id="theme-btn" onclick="__toggleTheme()" class="btn btn-ghost btn-sm" title="Toggle theme" style="font-size:1.1rem">🌙</button>
+              <div class="flex gap-0.5 items-center">
+                <button id="theme-btn" onclick="__toggleTheme()" class="btn btn-ghost btn-square btn-sm" title="Theme" style="font-size:1.1rem">🌙</button>
                 <div class="notif-wrapper">
-                  <button id="notif-bell" onclick="document.getElementById('notif-dropdown').classList.toggle('visible')" class="btn btn-ghost btn-sm" style="font-size:1.1rem;position:relative">
-                    🔔
-                    <span id="notif-count" class="notif-count"></span>
+                  <button id="nf" onclick="document.getElementById('nd').classList.toggle('visible')" class="btn btn-ghost btn-square btn-sm" style="font-size:1.1rem;position:relative">
+                    🔔<span id="nc" class="notif-count"></span>
                   </button>
-                  <div id="notif-dropdown" class="notif-dropdown">
+                  <div id="nd" class="notif-dropdown">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-base-200">
-                      <strong class="text-sm">Notifications</strong>
-                      <button onclick="markAllN()" class="btn btn-ghost btn-xs">Mark all read</button>
+                      <strong class="text-sm font-medium">Notifications</strong>
+                      <button onclick="mkAll()" class="btn btn-ghost btn-xs text-primary">Mark all read</button>
                     </div>
-                    <div id="notif-list"></div>
+                    <div id="nl"></div>
                     <div class="p-2 text-center border-t border-base-200">
-                      <a href="/admin/notifications" class="text-xs opacity-50 hover:opacity-100 no-underline">View all</a>
+                      <a href="/admin/notifications" class="text-xs opacity-40 hover:opacity-80 no-underline">View all</a>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <main class="p-4 lg:p-6">
-              {children}
-            </main>
+            <main>{children}</main>
           </div>
           <div class="drawer-side">
-            <label for="sidebar-toggle" aria-label="close sidebar" class="drawer-overlay"></label>
-            <div class="bg-base-200 min-h-full w-64 p-4 flex flex-col">
-              <div class="flex items-center gap-2 px-2 pb-4 mb-2 border-b border-base-300">
-                <svg width="24" height="24" viewBox="0 0 100 100" style="flex-shrink:0"><rect width="100" height="100" rx="20" fill="var(--color-primary)"/><text x="50" y="68" text-anchor="middle" fill="var(--color-primary-content)" font-size="50" font-weight="bold" font-family="system-ui">Z</text></svg>
-                <span class="font-bold text-sm">Zorux</span>
+            <label for="st" aria-label="close sidebar" class="drawer-overlay"></label>
+            <div class="bg-base-200 min-h-full w-64 p-3 flex flex-col gap-1">
+              <div class="flex items-center gap-2.5 px-3 py-3 mb-1">
+                <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-sm">Z</div>
+                <span class="font-bold text-sm tracking-tight">Zorux</span>
               </div>
-              <ul class="menu px-0 flex-1">
+              <ul class="menu px-0 flex-1 gap-0.5">
                 <li class="menu-title">Admin</li>
-                <li><a href="/admin">Dashboard</a></li>
+                <li><a href="/admin" class={isActive("dashboard")}>Dashboard</a></li>
                 {models?.map(m => (
-                  <li><a href={base + m.tableName}>{m.plural || m.name}</a></li>
+                  <li><a href={base + m.tableName} class={isActive(m.tableName)}>{m.plural || m.name}</a></li>
                 ))}
                 <li class="menu-title" style="margin-top:0.5rem">System</li>
-                <li><a href="/admin/features">Feature Flags</a></li>
-                <li><a href="/admin/emails">Email Sandbox</a></li>
-                <li><a href="/admin/monitor">Monitor</a></li>
+                <li><a href="/admin/features" class={isActive("features")}>Feature Flags</a></li>
+                <li><a href="/admin/emails" class={isActive("emails")}>Email Sandbox</a></li>
+                <li><a href="/admin/monitor" class={isActive("monitor")}>Monitor</a></li>
               </ul>
               {user ? (
                 <div class="flex items-center gap-3 px-3 py-3 mt-auto border-t border-base-300">
                   <div class="avatar placeholder">
-                    <div class="bg-primary text-primary-content w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs">{(user.name || "U")[0]}</div>
+                    <div class="bg-primary text-primary-content w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm">{(user.name || "U")[0]}</div>
                   </div>
-                  <div>
-                    <div class="text-sm font-medium">{user.name}</div>
-                    <a href="/logout" class="text-xs opacity-50 hover:opacity-100 no-underline">Logout</a>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium truncate">{user.name}</div>
+                    <a href="/logout" class="text-xs opacity-40 hover:opacity-80 no-underline">Logout</a>
                   </div>
                 </div>
               ) : (
-                <a href="/login" class="btn btn-soft btn-sm mt-auto">Login</a>
+                <a href="/login" class="btn btn-primary btn-sm mt-auto">Login</a>
               )}
             </div>
           </div>
         </div>
         <script>{`
-document.addEventListener("click",function(e){var dd=document.getElementById("notif-dropdown");if(dd&&!e.target.closest(".notif-wrapper"))dd.classList.remove("visible")})
+document.addEventListener("click",function(e){var d=document.getElementById("nd");if(d&&!e.target.closest(".notif-wrapper"))d.classList.remove("visible")})
 `}</script>
       </body>
     </html>

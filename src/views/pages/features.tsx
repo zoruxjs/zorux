@@ -2,10 +2,10 @@ import type { FC } from "hono/jsx"
 import { Layout } from "../components/Layout"
 
 interface Feature { id: number; key: string; name: string; description: string; enabled: number; created_at: string }
-interface FeaturePageProps { user?: any; models?: any[]; features: Feature[] }
+interface FeaturePageProps { user?: any; models?: any[]; features: Feature[]; active?: string }
 
-export const FeaturePage: FC<FeaturePageProps> = ({ user, models, features }) => (
-  <Layout title="Feature Flags - Admin" user={user} models={models}>
+export const FeaturePage: FC<FeaturePageProps> = ({ user, models, features, active }) => (
+  <Layout title="Feature Flags - Admin" user={user} models={models} active={active}>
     <h2 class="section-title">Feature Flags</h2>
     <p class="section-desc">Toggle features on/off without deploying</p>
 
