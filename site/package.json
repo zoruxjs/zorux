@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun run scripts/static-build.ts"
+  },
+  "dependencies": {
+    "hono": "^4.12.21"
+  }
+}

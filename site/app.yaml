@@ -1,0 +1,52 @@
+name: zorux
+type: fullstack
+database:
+  provider: sqlite
+  url: site.db
+theme:
+  mode: dark
+  primary: "#a855f7"
+  font: Inter
+models:
+  page:
+    fields:
+      slug: { type: string, required: true, unique: true }
+      title: { type: string, required: true }
+      content: { type: text }
+      published: { type: boolean, default: false }
+    timestamps: true
+    policies:
+      read: "*"
+      create: user.role == "admin"
+      update: user.role == "admin"
+      delete: user.role == "admin"
+  doc:
+    fields:
+      slug: { type: string, required: true, unique: true }
+      title: { type: string, required: true }
+      category: { type: string }
+      content: { type: text }
+      sort_order: { type: number, default: 0 }
+    timestamps: true
+    policies:
+      read: "*"
+      create: user.role == "admin"
+      update: user.role == "admin"
+      delete: user.role == "admin"
+  subscriber:
+    fields:
+      email: { type: string, required: true, unique: true }
+      name: { type: string }
+    timestamps: true
+    policies:
+      create: "*"
+      read: user.role == "admin"
+auth:
+  model: user
+  registration: admin
+  roles: [admin, editor]
+  defaultRole: editor
+plugins:
+  - zorux-site
+email:
+  provider: fake
