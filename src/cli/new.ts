@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 
-export async function newCommand(name: string, options: { api?: boolean; web?: boolean; mobile?: boolean; fullstack?: boolean; saas?: boolean; all?: boolean }) {
+export async function newCommand(name: string, options: { api?: boolean; web?: boolean; mobile?: boolean; fullstack?: boolean; saas?: boolean; all?: boolean; ui?: string }) {
   const projectDir = join(process.cwd(), name)
 
   if (existsSync(projectDir)) {
@@ -25,7 +25,7 @@ export async function newCommand(name: string, options: { api?: boolean; web?: b
 
   writeFileSync(join(projectDir, 'app.yaml'), isSaaS ? generateSaaSYaml(name) : generateAppYaml(name, mode))
 
-  const pkg = {
+  const pkg: any = {
     name,
     type: 'module',
     scripts: { dev: 'fw dev', build: 'fw build' },
@@ -36,6 +36,19 @@ export async function newCommand(name: string, options: { api?: boolean; web?: b
       zod: '^3.23.0',
     },
     devDependencies: { 'bun-types': 'latest', typescript: '^5.5.0' },
+  }
+
+  // Add UI framework dependencies if specified
+  if (options.ui && options.ui !== "default") {
+    try {
+      const { getUIDependencies } = await import("../core/theme")
+      const deps = getUIDependencies(options.ui)
+      for (const dep of deps) {
+        pkg.dependencies[dep] = "*"
+      }
+      pkg.scripts["dev"] = "zorux dev"
+      pkg.scripts["build"] = "zorux build"
+    } catch {}
   }
   writeFileSync(join(projectDir, 'package.json'), JSON.stringify(pkg, null, 2))
 
@@ -232,7 +245,7 @@ export const LandingPage: FC<{ appName: string }> = ({ appName }) => (
     <body>
       <div class="hero">
         <h1>{appName}</h1>
-        <p>Built with Zorux Framework — full-stack, auth, payments, teams.</p>
+        <p>Built with Zorux Framework ï¿½ full-stack, auth, payments, teams.</p>
         <a href="/login" class="btn">Get Started</a>
       </div>
       <div class="features">

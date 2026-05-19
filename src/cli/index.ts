@@ -27,6 +27,7 @@ const cmd = args[0]
 if (cmd === "new") {
   const name = args[1]
   if (!name) { console.error("zorux new <name> [--api | --web | --mobile | --fullstack]"); process.exit(1) }
+  const uiIdx = args.indexOf("--ui")
   const opts = {
     api: args.includes("--api"),
     web: args.includes("--web"),
@@ -34,6 +35,7 @@ if (cmd === "new") {
     fullstack: args.includes("--fullstack"),
     saas: args.includes("--saas"),
     all: args.includes("--all"),
+    ui: uiIdx >= 0 && args.length > uiIdx + 1 ? args[uiIdx + 1] : "default",
   }
   if (!opts.api && !opts.web && !opts.mobile && !opts.fullstack && !opts.saas && !opts.all) opts.web = true
   await newCommand(name, opts)
@@ -84,7 +86,7 @@ if (cmd === "new") {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
   console.log("Usage:")
-  console.log("  zorux new <name> [--api | --web | --mobile | --fullstack | --saas | --all]")
+  console.log("  zorux new <name> [--api | --web | --mobile | --fullstack | --saas | --all] [--ui <framework>]")
   console.log("  zorux dev [port]")
   console.log("  zorux gen mobile")
   console.log("  zorux gen desktop")
