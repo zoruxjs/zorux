@@ -9,42 +9,42 @@ interface MonitorProps {
 }
 
 export const MonitorPage: FC<MonitorProps> = ({ user, models, health, metrics }) => (
-  <Layout title="Monitor - Admin" user={user} models={models}>
-    <div style="margin-bottom:1.5rem">
-      <h1 style="margin:0">System Monitor</h1>
-      <p class="text-muted" style="margin:0.25rem 0 0">Health, metrics, and system status</p>
+  <Layout title="System Monitor - Admin" user={user} models={models}>
+    <div style="margin-bottom:1rem">
+      <h2 style="margin:0;font-size:1.25rem">System Monitor</h2>
+      <p class="text-muted text-sm" style="margin:0.25rem 0 0">Health, metrics, and system status</p>
     </div>
 
-    <div class="flex flex-gap" style="flex-wrap:wrap;margin-bottom:1.5rem">
-      <div class="card" style="flex:1;min-width:200px;padding:1.25rem;text-align:center">
-        <div style="font-size:1rem;color:var(--muted,#666)">Status</div>
-        <div style={`font-size:1.5rem;font-weight:700;margin-top:0.5rem;${health?.status === "healthy" ? "color:#22c55e" : "color:#ef4444"}`}>
+    <div class="flex flex-gap flex-wrap" style="margin-bottom:1.5rem">
+      <div class="metric-card">
+        <div class="metric-label">Status</div>
+        <div class={"metric-value " + (health?.status === "healthy" ? "metric-success" : "metric-danger")}>
+          <span class={"status-dot " + (health?.status === "healthy" ? "ok" : "err")}></span>
           {health?.status || "unknown"}
         </div>
       </div>
-      <div class="card" style="flex:1;min-width:200px;padding:1.25rem;text-align:center">
-        <div style="font-size:1rem;color:var(--muted,#666)">Uptime</div>
-        <div style="font-size:1.5rem;font-weight:700;margin-top:0.5rem;color:var(--text,#111)">
-          {Math.floor((health?.uptime || 0) / 60)}m
-        </div>
+      <div class="metric-card">
+        <div class="metric-label">Uptime</div>
+        <div class="metric-value metric-primary">{Math.floor((health?.uptime || 0) / 60)}m</div>
       </div>
-      <div class="card" style="flex:1;min-width:200px;padding:1.25rem;text-align:center">
-        <div style="font-size:1rem;color:var(--muted,#666)">Database</div>
-        <div style={`font-size:1.5rem;font-weight:700;margin-top:0.5rem;${health?.checks?.database?.status === "ok" ? "color:#22c55e" : "color:#ef4444"}`}>
+      <div class="metric-card">
+        <div class="metric-label">Database</div>
+        <div class={"metric-value " + (health?.checks?.database?.status === "ok" ? "metric-success" : "metric-danger")}>
+          <span class={"status-dot " + (health?.checks?.database?.status === "ok" ? "ok" : "err")}></span>
           {health?.checks?.database?.status || "checking"}
         </div>
       </div>
     </div>
 
-    <div class="flex flex-gap" style="flex-wrap:wrap">
+    <div class="flex flex-gap flex-wrap">
       <div class="card" style="flex:1;min-width:300px">
         <div class="card-header"><h2>Models</h2></div>
-        <div style="padding:1rem">
-          <table style="width:100%">
-            <thead><tr><th style="text-align:left">Model</th><th style="text-align:right">Records</th></tr></thead>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Model</th><th style="text-align:right">Records</th></tr></thead>
             <tbody>
               {metrics?.models && Object.entries(metrics.models).map(([name, count]) => (
-                <tr><td style="padding:4px 0">{name}</td><td style="padding:4px 0;text-align:right">{String(count)}</td></tr>
+                <tr><td>{name}</td><td style="text-align:right;font-family:var(--font-mono)">{String(count)}</td></tr>
               ))}
             </tbody>
           </table>
@@ -53,16 +53,16 @@ export const MonitorPage: FC<MonitorProps> = ({ user, models, health, metrics })
 
       <div class="card" style="flex:1;min-width:300px">
         <div class="card-header"><h2>System</h2></div>
-        <div style="padding:1rem">
-          <table style="width:100%">
+        <div class="table-wrap">
+          <table>
             <tbody>
-              <tr><td style="padding:4px 0">Organizations</td><td style="padding:4px 0;text-align:right">{metrics?.organizations ?? "-"}</td></tr>
-              <tr><td style="padding:4px 0">Members</td><td style="padding:4px 0;text-align:right">{metrics?.members ?? "-"}</td></tr>
-              <tr><td style="padding:4px 0">Notifications</td><td style="padding:4px 0;text-align:right">{metrics?.notifications ?? "-"}</td></tr>
-              <tr><td style="padding:4px 0">Sessions</td><td style="padding:4px 0;text-align:right">{metrics?.sessions ?? "-"}</td></tr>
-              <tr><td style="padding:4px 0">Jobs (pending)</td><td style="padding:4px 0;text-align:right">{metrics?.jobs?.pending ?? "-"}</td></tr>
-              <tr><td style="padding:4px 0">Jobs (failed)</td><td style="padding:4px 0;text-align:right">{metrics?.jobs?.failed ?? "-"}</td></tr>
-              <tr><td style="padding:4px 0">Jobs (completed)</td><td style="padding:4px 0;text-align:right">{metrics?.jobs?.completed ?? "-"}</td></tr>
+              <tr><td>Organizations</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.organizations ?? <span class="text-muted">-</span>}</td></tr>
+              <tr><td>Members</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.members ?? <span class="text-muted">-</span>}</td></tr>
+              <tr><td>Notifications</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.notifications ?? <span class="text-muted">-</span>}</td></tr>
+              <tr><td>Sessions</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.sessions ?? <span class="text-muted">-</span>}</td></tr>
+              <tr><td>Jobs (pending)</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.jobs?.pending ?? <span class="text-muted">-</span>}</td></tr>
+              <tr><td>Jobs (failed)</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.jobs?.failed ?? <span class="text-muted">-</span>}</td></tr>
+              <tr><td>Jobs (completed)</td><td style="text-align:right;font-family:var(--font-mono)">{metrics?.jobs?.completed ?? <span class="text-muted">-</span>}</td></tr>
             </tbody>
           </table>
         </div>
