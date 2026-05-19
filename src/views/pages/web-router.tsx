@@ -14,21 +14,27 @@ import { setSecureCookie } from "../../core/security"
 export async function createWebRouter(platform: PlatformAdapter, app: Hono) {
   const { config, models, database, auth } = platform
 
-  const staticDir = join(import.meta.dir, "../static")
+  const _dir = import.meta.dir
+  const staticDir = existsSync(join(_dir, "../static"))
+    ? join(_dir, "../static")
+    : join(_dir, "views/static")
   const rootDir = process.cwd()
   const { bundleCSS, bundleJS } = await import("../../core/assets").catch(() => ({ bundleCSS: () => "", bundleJS: () => "" }))
 
   app.get("/static/Zorux.css", (c) => {
     try {
       const css = bundleCSS(rootDir)
-      return c.html("<style>" + css + "</style>", 200, {
-        "Content-Type": "text/html; charset=utf-8",
+      return c.text(css, 200, {
+        "Content-Type": "text/css; charset=utf-8",
         "Cache-Control": "public, max-age=31536000, immutable",
       })
     } catch {
-      const cssPath = join(staticDir, "Zorux.css")
+      const cssPath = join(staticDir, "kai.css")
       if (existsSync(cssPath)) {
-        return c.html("<style>" + readFileSync(cssPath, "utf-8") + "</style>")
+        return c.text(readFileSync(cssPath, "utf-8"), 200, {
+          "Content-Type": "text/css; charset=utf-8",
+          "Cache-Control": "public, max-age=31536000, immutable",
+        })
       }
       return c.text("", 404)
     }

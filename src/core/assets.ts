@@ -80,7 +80,7 @@ function bundleFile(rootDir: string, filePath: string): BundledAsset {
 }
 
 export function bundleCSS(rootDir: string): string {
-  const cssPath = join(rootDir, "src", "views", "static", "Zorux.css")
+  const cssPath = join(rootDir, "src", "views", "static", "kai.css")
   const asset = bundleFile(rootDir, cssPath)
   return asset.content
 }
@@ -93,7 +93,7 @@ export function bundleJS(rootDir: string): string {
 
 export function getAssetHash(rootDir: string, name: string): string {
   const paths: Record<string, string> = {
-    "Zorux.css": join(rootDir, "src", "views", "static", "Zorux.css"),
+    "kai.css": join(rootDir, "src", "views", "static", "kai.css"),
     "turbo.js": join(rootDir, "src", "views", "static", "turbo.js"),
   }
   const filePath = paths[name]

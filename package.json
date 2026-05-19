@@ -15,7 +15,8 @@
     "templates"
   ],
   "scripts": {
-    "build": "bun build ./src/cli/index.ts --outdir=./dist --target=bun --external=mongodb --external=postgres --external=mysql2 --external=mysql2/promise --external=ioredis --external=memcached --external=@aws-sdk/lib-dynamodb --external=@aws-sdk/client-dynamodb --external=stripe --external=resend --external=@sendgrid/mail --external=nodemailer --external=@aws-sdk/client-s3 --external=graphql --external=meilisearch && node -e \"require('fs').writeFileSync('dist/index.js','#!/usr/bin/env bun\\n'+require('fs').readFileSync('dist/index.js','utf-8'))\"",
+    "build": "bun build ./src/cli/index.ts --outdir=./dist --target=bun --external=mongodb --external=postgres --external=mysql2 --external=mysql2/promise --external=ioredis --external=memcached --external=@aws-sdk/lib-dynamodb --external=@aws-sdk/client-dynamodb --external=stripe --external=resend --external=@sendgrid/mail --external=nodemailer --external=@aws-sdk/client-s3 --external=graphql --external=meilisearch",
+    "postbuild": "node -e \"const{cpSync,existsSync,mkdirSync}=require('fs');const{join}=require('path');const fs=require('fs');const s=join(__dirname,'dist/index.js');fs.writeFileSync(s,'#!/usr/bin/env bun\\n'+fs.readFileSync(s,'utf-8'));const src=join(__dirname,'src/views/static');const dst=join(__dirname,'dist/views/static');if(existsSync(src)){mkdirSync(dst,{recursive:true});cpSync(src,dst,{recursive:true,force:true})}\"",
     "dev": "bun --watch ./src/cli/index.ts",
     "prepublishOnly": "bun run build",
     "test": "bun test",
