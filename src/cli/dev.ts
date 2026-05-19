@@ -1,15 +1,18 @@
-import { existsSync } from "fs"
+import { existsSync, watch } from "fs"
 import { join } from "path"
 import type { AppInstance } from "../core/app"
 
 let currentApp: AppInstance | null = null
 let restartTimer: ReturnType<typeof setTimeout> | null = null
+let watchers: ReturnType<typeof watch>[] = []
+
+function clearWatchers() {
+  for (const w of watchers) { try { w.close() } catch {} }
+  watchers = []
+}
 
 function createWatcher(rootDir: string, port: number) {
-  if (typeof Bun === "undefined" || typeof Bun.watch !== "function") {
-    console.log("  (file watching unavailable — restart manually to apply changes)")
-    return
-  }
+  clearWatchers()
 
   const watchedDirs = [
     rootDir,
@@ -17,18 +20,24 @@ function createWatcher(rootDir: string, port: number) {
     join(rootDir, "jobs"),
     join(rootDir, "plugins"),
     join(rootDir, "locales"),
+    join(rootDir, "views"),
   ].filter(d => existsSync(d))
 
-  const watcher = Bun.watch(watchedDirs, { recursive: true })
-  watcher.addEventListener("change", (event) => {
-    const p = event.path || ""
-    // Only restart for source files
-    if (!/\.(yaml|yml|ts|js|tsx|jsx|json)$/i.test(p)) return
-    // Ignore node_modules and dist
-    if (p.includes("node_modules") || p.includes("/dist/")) return
+  for (const dir of watchedDirs) {
+    try {
+      const w = watch(dir, { recursive: true }, (eventType, filename) => {
+        if (!filename) return
+        const p = typeof filename === "string" ? filename : filename.toString()
+        // Only restart for source files
+        if (!/\.(yaml|yml|ts|js|tsx|jsx|json|css)$/i.test(p)) return
+        // Ignore node_modules and dist
+        if (p.includes("node_modules") || p.includes("/dist/") || p.includes("\\dist\\")) return
 
-    scheduleRestart(rootDir, port, p)
-  })
+        scheduleRestart(rootDir, port, p)
+      })
+      watchers.push(w)
+    } catch {}
+  }
 }
 
 function scheduleRestart(rootDir: string, port: number, changedPath: string) {
@@ -39,13 +48,13 @@ function scheduleRestart(rootDir: string, port: number, changedPath: string) {
 }
 
 async function doRestart(rootDir: string, port: number, changedPath: string) {
-  console.log(`\n  ?? Reloading: ${changedPath.split(/[/\\]/).pop()}`)
-  console.log(`  ---------------------------------`)
+  console.log(`\n  \u{1F504} Reloading: ${changedPath.split(/[/\\]/).pop()}`)
+  console.log(`  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`)
 
-  // Remove old module from Bun's require cache
-  for (const key of Object.keys(Bun?.main?.loader?.registry || {})) {
+  // Clear module cache for this project
+  for (const key of Object.keys(require.cache || {})) {
     if (key.includes(rootDir)) {
-      try { delete Bun.main.loader.registry[key] } catch {}
+      try { delete require.cache[key] } catch {}
     }
   }
 
@@ -54,7 +63,6 @@ async function doRestart(rootDir: string, port: number, changedPath: string) {
     const newApp = await createApp(rootDir)
 
     if (currentApp) {
-      // Stop old server
       try {
         const oldServer = (currentApp as any)._server
         if (oldServer?.stop) oldServer.stop()
@@ -63,10 +71,14 @@ async function doRestart(rootDir: string, port: number, changedPath: string) {
 
     currentApp = newApp
     currentApp.start(port)
+    // Re-create watchers after restart (they were closed by the old server shutdown)
+    createWatcher(rootDir, port)
   } catch (err: any) {
-    console.error(`\n  ? Reload failed: ${err.message}`)
-    console.error(`  ${err.stack?.split("\n").slice(0, 3).join("\n  ") || ""}`)
-    console.log(`  ? Waiting for file change to retry...`)
+    console.error(`\n  \u274C Reload failed: ${err.message}`)
+    if (err.stack) {
+      console.error(`  ${err.stack.split("\n").slice(0, 3).join("\n  ") || ""}`)
+    }
+    console.log(`  \u23F3 Waiting for file change to retry...`)
   }
 }
 
@@ -79,18 +91,20 @@ export async function devCommand(options: { port?: string }) {
     process.exit(1)
   }
 
-  console.log(`\n  ? Zorux dev server\n`)
+  console.log(`\n  \u26A1 Zorux dev server`)
   console.log(`  Root: ${rootDir}`)
   console.log(`  Watching for file changes...`)
-  console.log(`  ---------------------------------`)
+  console.log(`  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`)
 
   try {
     const { createApp } = await import("../core/app")
     currentApp = await createApp(rootDir)
     currentApp.start(port)
   } catch (err: any) {
-    console.error(`\n  ? Failed to start: ${err.message}`)
-    console.error(`  ${err.stack?.split("\n").slice(0, 3).join("\n  ") || ""}`)
+    console.error(`\n  \u274C Failed to start: ${err.message}`)
+    if (err.stack) {
+      console.error(`  ${err.stack.split("\n").slice(0, 3).join("\n  ") || ""}`)
+    }
     process.exit(1)
   }
 
