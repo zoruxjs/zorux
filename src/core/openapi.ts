@@ -1,5 +1,6 @@
 import type { PlatformAdapter } from "./platform"
 import type { CompiledField, CompiledModel } from "./types"
+import { getVersion } from "./version"
 
 function toTsType(field: CompiledField): string {
   if (field.type === "int" || field.type === "bool") return "integer"
@@ -204,7 +205,7 @@ export function generateOpenApiSpec(platform: PlatformAdapter): Record<string, a
     openapi: "3.0.3",
     info: {
       title: config.name,
-      version: "0.1.0",
+      version: getVersion(),
       description: "Zorux API - " + config.type + " project",
     },
     servers: [{ url: "/" }],

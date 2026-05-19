@@ -3,6 +3,7 @@ import { cors } from "hono/cors"
 import { logger } from "hono/logger"
 import type { PlatformAdapter } from "./platform"
 import { validateFields } from "./validate"
+import { getVersion } from "./version"
 import { generateOpenApiSpec, swaggerUiHtml } from "./openapi"
 import { checkPolicy as abacCheck, filterFields, addDerivedRole } from "./policy-engine"
 import { fireWebhookEvent } from "./webhooks"
@@ -130,7 +131,7 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
 
   app.get("/api", (c) => c.json({
     name: config.name,
-    version: "0.1.0",
+    version: getVersion(),
     models: models.map(m => ({ name: m.name, path: "/api/" + m.tableName })),
   }))
 

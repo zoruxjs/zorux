@@ -1,3 +1,4 @@
+import { getVersion } from "../core/version"
 import { newCommand } from "./new"
 import { devCommand } from "./dev"
 import { genMobileCommand } from "./gen-mobile"
@@ -80,7 +81,7 @@ if (cmd === "new") {
 } else if (cmd === "runner") {
   await runnerCommand(args)
 } else {
-  console.log("Zorux v0.1.0 - AI-first web framework")
+  console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
   console.log("Usage:")
   console.log("  zorux new <name> [--api | --web | --mobile | --fullstack | --saas | --all]")

@@ -1,5 +1,6 @@
 import { join } from "path"
 import { parseAppConfig } from "./yaml"
+import { getVersion } from "./version"
 import { compileModels } from "./compiler"
 import { createPlatform } from "./platform"
 import { createRouter } from "./router"
@@ -238,7 +239,7 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
       const assetCB = Date.now().toString(36)
       ;(globalThis as any).__Zorux_ASSET_CB = assetCB
       console.log("")
-      console.log("  Zorux v0.1.0 - " + config.name)
+      console.log("  Zorux v" + getVersion() + " - " + config.name)
       console.log("  API:  http://localhost:" + port + "/api")
       if (config.type === "web" || config.type === "fullstack") {
         console.log("  Web:  http://localhost:" + port + "/admin")
