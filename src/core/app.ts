@@ -313,6 +313,7 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
       const shutdown = async () => {
         await applyPluginShutdown(plugins)
         server.stop()
+        process.exit(0)
       }
       process.on("SIGINT", shutdown)
       process.on("SIGTERM", shutdown)
