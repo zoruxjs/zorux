@@ -180,7 +180,55 @@ models:
       avatar: file
       role: string enum:admin,editor,user default:user
     auth: password
-    timestamps: true
+      timestamps: true
+```
+
+### Hooks
+
+Lifecycle hooks allow running custom code before and after CRUD operations on a model.
+
+```yaml
+models:
+  Post:
+    fields:
+      title: string required
+      body: text required
+    hooks:
+      beforeCreate: actions/validate-post.ts
+      afterCreate: actions/notify-subscribers.ts
+      beforeUpdate: actions/audit-changes.ts
+      afterUpdate: actions/reindex-search.ts
+      beforeDelete: actions/backup-record.ts
+      afterDelete: actions/cleanup-assets.ts
+```
+
+**Available hooks:**
+
+| Hook | Timing | Context passed |
+|---|---|---|
+| `beforeCreate` | Before record is inserted | `{ c, body, model }` |
+| `afterCreate` | After record is inserted | `{ c, body, created, model }` |
+| `beforeUpdate` | Before record is updated | `{ c, id, body, existing, model }` |
+| `afterUpdate` | After record is updated | `{ c, id, body, existing, updated, model }` |
+| `beforeDelete` | Before record is deleted | `{ c, id, existing, model }` |
+| `afterDelete` | After record is deleted | `{ c, id, existing, model }` |
+
+Each hook handler is an action file exported as a default function or named `handler`. Throwing an error aborts the operation.
+
+**Example hook handler (actions/validate-post.ts):**
+
+```ts
+import { F } from "zorux"
+
+export default async function validatePost(ctx: { body: any }) {
+  if (!ctx.body.title || ctx.body.title.length < 5) {
+    throw new Error("Title must be at least 5 characters")
+  }
+  if (!ctx.body.slug) {
+    ctx.body.slug = ctx.body.title.toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+  }
+}
 ```
 
 ## Authentication
@@ -505,7 +553,7 @@ pluginConfig:
 | Format | Source |
 |---|---|
 | `my-plugin` | `plugins/my-plugin.ts` or `plugins/my-plugin/index.ts` |
-| `npm-package` | npm package `npm-package` (tries `kai-plugin-npm-package` first) |
+| `npm-package` | npm package `npm-package` (tries `zorux-plugin-npm-package` first, falls back to `kai-plugin-npm-package` for legacy compat) |
 
 ## Complete Example
 

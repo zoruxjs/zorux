@@ -2,6 +2,8 @@
 
 Zorux generates a complete admin panel with dashboard, CRUD management, file uploads, rich text editing, email sandbox, feature flags, health monitoring, and more.
 
+The admin panel is built with **DaisyUI 5** + **Tailwind CSS 4**, compiled via `build:css` into a single CSS file (~150KB). It supports light and dark themes with a configurable OKLCH color palette.
+
 ## Access
 
 The admin panel is available at `/admin`. All admin pages require authentication — unauthenticated users are redirected to `/login`.
@@ -192,3 +194,28 @@ export default {
   }
 }
 ```
+
+## DaisyUI Components
+
+The admin panel uses these DaisyUI 5 components:
+
+| Component | Usage |
+|---|---|
+| **Drawer** | Sidebar layout (`lg:drawer-open`) |
+| **Navbar** | Top bar with title, theme toggle, notifications |
+| **Menu** | Sidebar navigation with active state |
+| **Stat** | Dashboard stat cards |
+| **Card** | Content sections (list, form, dashboard) |
+| **Table** | Data tables |
+| **Modal** | Delete confirmation dialogs |
+| **Join** | Pagination and button groups |
+| **Toggle** | Feature flag on/off |
+| **Status** | Health indicators |
+| **Fieldset** | Form field grouping |
+| **Alert** | Error messages |
+| **Badge** | Status labels |
+| **Tooltip** | Icon hints |
+| **Dropdown** | Notification dropdown |
+| **Input / Select / File Input** | Form fields |
+
+The theme is configured via OKLCH color values compiled from `admin.css`. Light and dark themes are supported and toggled via the navbar button.

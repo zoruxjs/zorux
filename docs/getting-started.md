@@ -27,8 +27,20 @@ npm install -g zorux
 ### 1. Create a project
 
 ```bash
-# Full SaaS (API + Admin + Auth + Payments)
-zorux new my-app --saas
+# Full SaaS (API + Admin + Auth + Payments + Teams)
+zorux new my-app --preset saas
+
+# API-only
+zorux new my-api --preset api
+
+# Blog with public posts
+zorux new my-blog --preset blog
+
+# Web app (API + Admin + Landing)
+zorux new my-web --preset web
+
+# Minimal (no example pages)
+zorux new my-app --preset web --minimal
 
 # API only
 zorux new my-api --api
@@ -110,31 +122,52 @@ my-app/
 ## CLI Commands
 
 ```bash
-zorux new <name> [options]    # Create new project
-zorux dev [port]              # Start dev server with hot reload
-zorux gen mobile              # Generate Expo mobile app
-zorux gen desktop             # Generate Tauri desktop app
-zorux gen pwa                 # Generate PWA
-zorux gen graphql             # Generate GraphQL client
-zorux add model <Name> ...    # Add model to app.yaml
-zorux make action <name>      # Create action file
-zorux make job <name>         # Create job file
-zorux make migration <name>   # Create migration file
-zorux seed [--count N]        # Seed database
-zorux db reset                # Delete database
-zorux db migrate [--auto]     # Run migrations
-zorux db rollback             # Rollback last batch
-zorux db status               # Show migration status
-zorux db schema dump          # Dump schema to SQL
-zorux deploy                  # Deploy app
-zorux test                    # Run tests
-zorux audit                   # Security audit
-zorux info                    # Project info
-zorux docs [topic]            # Open documentation
-zorux scaffold <template>     # Scaffold from template
-zorux console                 # Interactive REPL
-zorux plugin list|add|remove  # Manage plugins
-zorux credentials setup       # Manage credentials
+zorux new <name> [options]        # Create new project (--preset, --minimal)
+zorux dev [port]                  # Start dev server with hot reload
+zorux gen mobile                  # Generate Expo mobile app
+zorux gen desktop                 # Generate Tauri desktop app
+zorux gen pwa                     # Generate PWA
+zorux gen graphql                 # Generate GraphQL client
+zorux add model <Name> ...        # Add model to app.yaml
+zorux add field <m> <f>:<t>       # Add field to existing model
+zorux add page <name>             # Generate DaisyUI page
+zorux add package <pkg>           # Install + register provider
+zorux add plugin <name>           # Scaffold plugin file
+zorux make action <name>          # Create action file
+zorux make job <name>             # Create job file
+zorux make migration <name>       # Create migration file
+zorux seed [--count N]            # Seed database
+zorux db reset                    # Delete database
+zorux db migrate [--auto]         # Run migrations
+zorux db rollback                 # Rollback last batch
+zorux db status                   # Show migration status
+zorux db schema dump              # Dump schema to SQL
+zorux deploy                      # Deploy app
+zorux test                        # Run tests
+zorux audit                       # Security audit
+zorux info                        # Project info
+zorux docs [topic]                # Open documentation
+zorux scaffold <template>         # Scaffold from template
+zorux console                     # Interactive REPL
+zorux plugin list|add|remove      # Manage plugins
+zorux credentials setup           # Manage credentials
+zorux recipe add <name>           # Apply YAML recipe
+zorux inspect [--json]            # Project manifest
+zorux explain [app.yaml]          # Generation plan
+zorux verify                      # Validate project contract
+zorux doctor [--verbose]          # Full diagnostic
+zorux context [--budget N]        # LLM context
+zorux routes                      # Route map with ownership
+zorux map                         # File ownership map
+zorux diff                        # Semantic diff
+zorux decisions                   # Decision tree
+zorux ownership <name>            # Model/route/field ownership
+zorux token-report                # Token savings estimate
+zorux snapshot                    # Project state snapshot
+zorux cleanup                     # Remove old name references
+zorux agent init                  # Generate agent instructions
+zorux lint agent                  # Detect agent anti-patterns
+zorux guard install               # Install preinstall guard
 zorux version                 # Show version
 ```
 

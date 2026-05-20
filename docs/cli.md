@@ -28,22 +28,30 @@ zorux new <name> [options]
 
 | Flag | Description |
 |---|---|
-| `--api` | API-only project |
-| `--web` | Web admin project |
+| `--preset <name>` | Project preset: `api`, `web`, `saas`, `blog` |
+| `--api` | API-only project (alias for `--preset api`) |
+| `--web` | Web admin project (alias for `--preset web`) |
 | `--mobile` | Mobile (Expo) project |
 | `--fullstack` | API + Web admin |
-| `--saas` | Full SaaS (API + Admin + Auth + Payments) |
+| `--saas` | Full SaaS (API + Admin + Auth + Payments) (alias for `--preset saas`) |
 | `--all` | Everything (API + Admin + Mobile + Desktop + PWA) |
+| `--minimal` | Minimal project (no example pages) |
 | `--ui <framework>` | UI framework: `tailwind`, `daisyui`, `antd`, `mui`, `chakra`, `mantine`, `headless` |
 
 **Examples:**
 
 ```bash
 # Create a full SaaS project
-zorux new my-app --saas
+zorux new my-app --preset saas
+
+# Create a blog
+zorux new my-blog --preset blog
 
 # Create an API-only project
 zorux new my-api --api
+
+# Minimal project (no web pages)
+zorux new my-app --preset web --minimal
 
 # Create with Tailwind UI
 zorux new my-app --saas --ui tailwind
@@ -433,6 +441,344 @@ Show the installed version.
 ```bash
 zorux version
 ```
+
+### `zorux inspect`
+
+Inspect the current project and generate a manifest.
+
+```bash
+zorux inspect [--json]
+```
+
+Without flags, prints a human-readable project summary. With `--json`, writes `.zorux/manifest.json` containing models, routes, auth config, and plugins.
+
+### `zorux explain`
+
+Show the full generation plan for the current project.
+
+```bash
+zorux explain [app.yaml]
+```
+
+Displays models, fields, relations, auth, routes, plugins, and files that will be generated. Accepts an optional path to an `app.yaml` file.
+
+### `zorux verify`
+
+Validate the project contract.
+
+```bash
+zorux verify
+```
+
+Runs 15+ checks on the project:
+- app.yaml exists and is parseable
+- Models defined
+- Auth model exists and has required fields
+- Database configured
+- Package.json and node_modules present
+- Unique field constraints
+- Policy safety checks
+- Scoped models have organization enabled
+- Soft delete models have timestamps
+- Plugin files exist
+- Public routes without rate limiting flagged
+- Semantic warnings
+
+Exit code 1 if errors are found.
+
+### `zorux doctor`
+
+Full project diagnostic.
+
+```bash
+zorux doctor [--verbose]
+```
+
+Runs 14+ checks including all `verify` checks plus:
+- Node/Bun version
+- Port availability
+- Plugins existence
+- Web pages count
+- Actions count
+- Environment file
+
+### `zorux context`
+
+Generate LLM context file.
+
+```bash
+zorux context [--budget N] [--output <path>]
+```
+
+Generates a `.md` file with project context designed for AI agents.
+
+**Options:**
+
+| Flag | Description |
+|---|---|
+| `--budget 2000` | Compact version (~500 tokens) |
+| `--budget 8000` | Medium version (models + policies) |
+| (no flag) | Full version with all details |
+| `--output .zorux/context.md` | Write to file instead of stdout |
+
+### `zorux routes`
+
+Show all routes with ownership information.
+
+```bash
+zorux routes
+```
+
+Output format:
+```
+[core:crud(User)]
+  GET    /api/users
+  POST   /api/users
+  GET    /api/users/:id
+[core:auth]
+  POST   /api/auth/login
+[core:admin]
+  GET    /admin
+```
+
+### `zorux map`
+
+Show file ownership map — which files are editable vs generated.
+
+```bash
+zorux map
+```
+
+### `zorux diff`
+
+Semantic diff between current app.yaml and previous manifest.
+
+```bash
+zorux diff
+```
+
+Detects:
+- Added/removed models
+- New/deleted fields
+- Changed policies
+- Required migrations
+
+### `zorux decisions`
+
+Show the decision tree explaining why each feature exists.
+
+```bash
+zorux decisions
+```
+
+Output format:
+```
+Because type="fullstack":
+  - Admin routes enabled
+  - Login/register pages enabled
+
+Because auth.model="User":
+  - Auth routes: /api/auth/register, /api/auth/login
+```
+
+### `zorux ownership`
+
+Show ownership details for a model, route, or field.
+
+```bash
+zorux ownership <model|/route|field>
+```
+
+**Examples:**
+```bash
+zorux ownership User         # Model ownership (fields, policies, used by)
+zorux ownership /api/users   # Route ownership (core:crud, declared in)
+zorux ownership email        # Field ownership (model, type, provenance)
+```
+
+### `zorux token-report`
+
+Estimate token savings compared to traditional frameworks.
+
+```bash
+zorux token-report
+```
+
+Output example:
+```
+App Contract (Zorux):
+  app.yaml:          830 tokens
+  Custom code:      1,240 tokens
+  Total Zorux:      2,070 tokens
+
+Traditional Equivalent: 18,400 tokens
+Savings: 89% less tokens
+```
+
+### `zorux snapshot`
+
+Generate a compact project state snapshot.
+
+```bash
+zorux snapshot
+```
+
+Writes `.zorux/snapshot.md` with:
+- App name, type, database
+- Model list with field counts
+- Route count
+- Custom file count
+- Warnings (missing auth, missing node_modules)
+
+### `zorux cleanup`
+
+Remove old framework name references across source and docs.
+
+```bash
+zorux cleanup
+```
+
+Scans `src/` and `docs/` for old names (`fw`, `Zorux.css`) and replaces them with current names.
+
+### `zorux recipe add`
+
+Apply a YAML recipe to the current project.
+
+```bash
+zorux recipe add <name>
+```
+
+**Available recipes (20):**
+
+| Recipe | Description | Requires |
+|---|---|---|
+| `blog` | Post + Category + Comment | — |
+| `teams` | Organization + Invites | auth |
+| `billing` | Stripe subscriptions | auth, admin |
+| `docs-site` | Doc + DocGroup + Search | auth |
+| `newsletter` | Subscriber + Campaign + Template + SendLog | auth, email |
+| `api-keys` | ApiKey + Scope + RateLimit | auth |
+| `audit-log` | Audit trail for compliance | — |
+| `waitlist` | Waitlist signup + referral codes | — |
+| `ecommerce` | Product + Variant + Cart + Order + Review | auth |
+| `notifications` | Templates + Channels + Preferences | auth |
+| `search` | SearchIndex + Synonym + Boost | auth |
+| `dashboard` | KPI definitions + Chart configs | admin |
+| `pricing-page` | Plan + Feature + Tier | admin |
+| `docker-deploy` | Dockerfile + docker-compose | — |
+| `cdn-assets` | File upload + image optimization | storage |
+| `webhooks-out` | Webhook endpoints + delivery log | auth, jobs |
+| `scheduled-tasks` | Task scheduler + execution log | jobs |
+| `agent-api` | Agent + Thread + Message + Run | auth |
+| `content-moderation` | Report + Flag + ReviewQueue | auth, admin |
+| `portfolio` | Project + Tag + Testimonial + Contact | — |
+
+Validates requirements before applying. Creates models, updates app.yaml, and generates action/job files.
+
+### `zorux agent init`
+
+Generate AI agent instruction files for the project.
+
+```bash
+zorux agent init
+```
+
+Creates:
+- `AGENTS.md` — Full agent instructions
+- `CLAUDE.md` — Claude Code format
+- `.cursor/rules/zorux.mdc` — Cursor editor rules
+- `.github/copilot-instructions.md` — GitHub Copilot
+- `.windsurf/rules/zorux.md` — Windsurf editor
+- `.zorux/agent/README.md` — Agent instructions (copy)
+- `.zorux/agent/allowed-actions.json` — Machine-readable contract
+
+### `zorux lint agent`
+
+Detect agent anti-patterns in the project.
+
+```bash
+zorux lint agent
+```
+
+Checks for:
+- Express, Prisma, Next, Passport, bcrypt packages installed unnecessarily
+- Manual CRUD routes for declared models
+- Manual auth middleware
+- Prisma schema files
+- Custom server files
+
+### `zorux guard install`
+
+Preinstall hook that warns when using npm directly instead of Zorux commands.
+
+```bash
+zorux guard install
+```
+
+Adds to `package.json` scripts:
+```
+"preinstall": "zorux guard install"
+```
+
+### `zorux add field`
+
+Add a field to an existing model.
+
+```bash
+zorux add field <model> <field>:<type> [flags...]
+```
+
+**Examples:**
+```bash
+zorux add field Post summary:text required
+zorux add field User age:int required max:120
+zorux add field Subscriber email:email unique
+```
+
+### `zorux add page`
+
+Generate a new DaisyUI page.
+
+```bash
+zorux add page <name>
+```
+
+Creates `web/pages/<name>.tsx` with:
+- DaisyUI navbar
+- Hero section
+- Responsive layout
+Auto-registered at `GET /<name>`.
+
+### `zorux add package`
+
+Install an npm package and register it as a Zorux provider.
+
+```bash
+zorux add package <npm-package>
+```
+
+Known packages automatically update `app.yaml`:
+
+| Package | Provider config |
+|---|---|
+| `stripe` | `payments.provider: stripe` |
+| `resend` | `email.provider: resend` |
+| `ioredis` | `cache.provider: redis` |
+| `pg` | `database.provider: postgres` |
+| `mongodb` | `database.provider: mongodb` |
+| `@aws-sdk/client-s3` | `storage.provider: s3` |
+
+Other packages are installed normally (without app.yaml changes).
+
+### `zorux add plugin`
+
+Scaffold a new plugin file.
+
+```bash
+zorux add plugin <name>
+```
+
+Creates `plugins/<name>.ts` with a basic plugin template and registers it in `app.yaml`.
 
 ## Shell Completion
 

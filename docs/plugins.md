@@ -35,9 +35,10 @@ plugins:
   - zorux-analytics
 ```
 
-The loader tries the exact name first, then prepends `kai-plugin-`:
-1. `zorux-analytics`
-2. `kai-plugin-zorux-analytics`
+The loader tries the exact name first, then prepends `zorux-plugin-` (with legacy fallback to `kai-plugin-`):
+1. `zorux-analytics` (exact match)
+2. `zorux-plugin-zorux-analytics` (preferred prefix)
+3. `kai-plugin-zorux-analytics` (legacy fallback)
 
 ## Plugin Interface
 
