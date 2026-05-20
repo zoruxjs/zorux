@@ -1,26 +1,12 @@
 {
   "name": "zorux",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "type": "module",
   "description": "AI-first web framework: API, Web, Mobile — minimal tokens, maximum output",
   "bin": {
     "zorux": "dist/index.js"
   },
   "main": "./dist/core/index.js",
-  "exports": {
-    ".": "./dist/core/index.js",
-    "./plugin": "./dist/core/define-plugin.js"
-  },
-  "files": [
-    "dist",
-    "templates",
-    "src/core",
-    "src/cli",
-    "src/views",
-    "recipes",
-    "presets",
-    ".zorux/patterns"
-  ],
   "exports": {
     ".": "./src/core/index.ts",
     "./plugin": "./src/core/define-plugin.ts",
@@ -34,6 +20,16 @@
     "./search": "./src/core/search/index.ts",
     "./webhooks": "./src/core/webhooks/index.ts"
   },
+  "files": [
+    "dist",
+    "templates",
+    "src/core",
+    "src/cli",
+    "src/views",
+    "recipes",
+    "presets",
+    ".zorux/patterns"
+  ],
   "scripts": {
     "build": "bun run build:js && bun run build:css && bun run postbuild",
     "build:js": "bun build ./src/cli/index.ts --outdir=./dist --target=bun --external=mongodb --external=postgres --external=mysql2 --external=mysql2/promise --external=ioredis --external=memcached --external=@aws-sdk/lib-dynamodb --external=@aws-sdk/client-dynamodb --external=stripe --external=resend --external=@sendgrid/mail --external=nodemailer --external=@aws-sdk/client-s3 --external=graphql --external=meilisearch",
