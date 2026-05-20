@@ -148,6 +148,21 @@ if (cmd === "new") {
 } else if (cmd === "add" && args[1] === "plugin") {
   const { addPluginCommand } = await import("./add-commands")
   await addPluginCommand(args)
+} else if (cmd === "apply") {
+  const { applyCommand } = await import("./apply")
+  await applyCommand(args)
+} else if (cmd === "lint" && args[1] === "ai") {
+  const { lintAiCommand } = await import("./lint-ai")
+  await lintAiCommand()
+} else if (cmd === "quality") {
+  const { qualityCommand } = await import("./quality")
+  await qualityCommand()
+} else if (cmd === "review") {
+  const { reviewCommand } = await import("./review")
+  await reviewCommand()
+} else if (cmd === "fix" && args[1] === "ai") {
+  const { fixAiCommand } = await import("./fix")
+  await fixAiCommand()
 } else {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
@@ -170,6 +185,10 @@ if (cmd === "new") {
   console.log("  zorux cleanup                🧹 Remove old reference names")
   console.log("  zorux agent init             🤖 Generate agent instructions")
   console.log("  zorux lint agent             🧹 Detect agent anti-patterns")
+  console.log("  zorux lint ai                🧪 Detect LLM anti-patterns")
+  console.log("  zorux quality                📊 Code quality metrics")
+  console.log("  zorux review                 👁️  Diff review heuristics")
+  console.log("  zorux fix ai                 🔧 Automatic codemods")
   console.log("  zorux add field <m> <f>:<t>  ➕ Add field to model")
   console.log("  zorux add page <name>        📄 Generate DaisyUI page")
   console.log("  zorux add package <pkg>      📦 Install + register provider")
