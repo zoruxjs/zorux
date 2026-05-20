@@ -135,6 +135,32 @@ export const appConfigSchema = z.object({
     resend: z.object({ apiKey: z.string().optional() }).optional(),
     sendgrid: z.object({ apiKey: z.string().optional() }).optional(),
   }).optional(),
+  forms: z.record(z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    model: z.string().optional(),
+    fields: z.array(z.union([z.string(), z.object({
+      name: z.string(),
+      type: z.string().optional(),
+      label: z.string().optional(),
+      required: z.boolean().optional(),
+      placeholder: z.string().optional(),
+    })])),
+    button: z.string().optional(),
+    honeypot: z.boolean().optional(),
+    rateLimit: z.string().optional(),
+    submit: z.object({
+      action: z.string().optional(),
+      redirect: z.string().optional(),
+    }).optional(),
+    success: z.object({
+      message: z.string().optional(),
+      email: z.object({
+        subject: z.string().optional(),
+        template: z.string().optional(),
+      }).optional(),
+    }).optional(),
+  })).optional(),
 })
 
 export type ParsedFieldDef = z.infer<typeof fieldDefSchema>

@@ -207,6 +207,16 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
     }
   }
 
+  // Register declarative forms
+  if (config.forms) {
+    try {
+      const { registerForms } = await import("./forms")
+      registerForms(app, config.forms, config)
+    } catch (e) {
+      // forms config exists but couldn't register — non-fatal
+    }
+  }
+
   // Apply plugin routes (registered last so they can override admin routes)
   await applyPluginRoutes(app, platform, plugins)
 
