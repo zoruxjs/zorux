@@ -1,5 +1,9 @@
 # PWA (Progressive Web App)
 
+<!-- maturity: 🔬 Experimental -->
+> **🔬 Experimental** — This feature is in early development — not recommended for production
+
+
 Zorux generates PWA support with manifest, service worker, and icons for installable web apps.
 
 ## Generation

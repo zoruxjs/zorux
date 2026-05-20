@@ -1,5 +1,9 @@
 # Payments
 
+<!-- maturity: 🔬 Experimental -->
+> **🔬 Experimental** — This feature is in early development — not recommended for production
+
+
 Zorux supports Stripe and Polar.sh for payment processing with checkout sessions, subscriptions, webhooks, and customer management.
 
 ## Configuration

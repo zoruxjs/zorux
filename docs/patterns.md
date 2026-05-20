@@ -1,5 +1,9 @@
 # Patterns
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux provides official skeleton patterns for common custom code. These ensure consistency, proper error handling, and TypeScript safety when writing actions, jobs, and plugins.
 
 Patterns are located at `.zorux/patterns/` in the project root.

@@ -1,5 +1,9 @@
 # Security
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux includes enterprise-grade security with ABAC/RBAC policies, security headers, rate limiting, CSRF protection, input sanitization, and audit logging.
 
 ## ABAC / RBAC Policy Engine

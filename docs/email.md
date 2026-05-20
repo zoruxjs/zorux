@@ -1,5 +1,9 @@
 # Email
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux supports 5 email providers with a unified `sendEmail()` API, in-memory sandbox, and admin email viewer.
 
 ## Configuration

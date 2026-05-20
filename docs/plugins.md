@@ -1,5 +1,9 @@
 # Plugins
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux has a powerful plugin system that supports npm packages and local plugins with 12 auto-detection adapters for seamless integration.
 
 ## Configuration

@@ -1,5 +1,9 @@
 # API Reference
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Every model in your `app.yaml` automatically generates a complete REST API with CRUD operations, pagination, search, sorting, bulk operations, import/export, and more.
 
 ## Base URL

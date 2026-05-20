@@ -1,5 +1,9 @@
 # Cache
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux supports 10 cache providers with auto-caching middleware, automatic invalidation, and cache headers.
 
 ## Configuration

@@ -1,5 +1,9 @@
 # Background Jobs
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux includes a persistent background job system with retry, delayed scheduling, and multiple queue backends.
 
 ## Configuration

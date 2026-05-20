@@ -1,5 +1,9 @@
 # Admin Panel
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux generates a complete admin panel with dashboard, CRUD management, file uploads, rich text editing, email sandbox, feature flags, health monitoring, and more.
 
 The admin panel is built with **DaisyUI 5** + **Tailwind CSS 4**, compiled via `build:css` into a single CSS file (~150KB). It supports light and dark themes with a configurable OKLCH color palette.

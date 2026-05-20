@@ -1,5 +1,9 @@
 # GraphQL
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux auto-generates a GraphQL schema from your models with queries, mutations, and pagination support.
 
 ## Configuration

@@ -1,5 +1,9 @@
 # Webhooks
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux automatically fires webhooks on CRUD operations with HMAC-SHA256 signed payloads, retry logic, and per-model event filtering.
 
 ## Configuration

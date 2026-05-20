@@ -1,5 +1,9 @@
 # Real-time
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux includes a WebSocket server with pub/sub engine, auto-publish on CRUD, and Turbo-style SPA navigation with live refresh.
 
 ## Configuration

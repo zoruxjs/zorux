@@ -1,5 +1,9 @@
 # YAML Reference
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 The `app.yaml` file is the single source of truth for your entire application. Every model, auth configuration, database setting, plugin, and integration is defined here.
 
 ## Top-Level Structure

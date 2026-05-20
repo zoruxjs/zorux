@@ -1,5 +1,9 @@
 # Mobile (Expo)
 
+<!-- maturity: 🔬 Experimental -->
+> **🔬 Experimental** — This feature is in early development — not recommended for production
+
+
 Zorux generates a complete Expo React Native mobile app from your `app.yaml` with typed SDK, auth screens, per-model CRUD, real-time updates, and file uploads.
 
 ## Generation

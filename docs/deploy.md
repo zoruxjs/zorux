@@ -1,5 +1,9 @@
 # Deploy
 
+<!-- maturity: 🔬 Experimental -->
+> **🔬 Experimental** — This feature is in early development — not recommended for production
+
+
 Zorux supports deployment to Docker, Vercel, Netlify, and Cloudflare Workers.
 
 ## Docker

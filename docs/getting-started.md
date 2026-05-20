@@ -1,5 +1,9 @@
 # Getting Started
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux is an AI-first full-stack framework. A single `app.yaml` file generates your entire application — REST API, admin panel, mobile app, desktop app, PWA, GraphQL, webhooks, background jobs, authentication with 35+ OAuth providers, and more.
 
 ## Why Zorux

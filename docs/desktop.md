@@ -1,5 +1,9 @@
 # Desktop (Tauri)
 
+<!-- maturity: 🔬 Experimental -->
+> **🔬 Experimental** — This feature is in early development — not recommended for production
+
+
 Zorux generates a complete Tauri v2 desktop application that connects to your Zorux API.
 
 ## Generation

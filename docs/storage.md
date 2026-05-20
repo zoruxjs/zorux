@@ -1,5 +1,9 @@
 # Storage
 
+<!-- maturity: 🧪 Beta -->
+> **🧪 Beta** — This feature is functional but may have breaking changes
+
+
 Zorux supports 3 storage providers for file uploads: local filesystem, S3-compatible, and Supabase Storage.
 
 ## Configuration

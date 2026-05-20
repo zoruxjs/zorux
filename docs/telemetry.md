@@ -1,5 +1,9 @@
 # Telemetry & Metrics
 
+<!-- maturity: 🔬 Experimental -->
+> **🔬 Experimental** — This feature is in early development — not recommended for production
+
+
 Zorux includes built-in telemetry with Prometheus-format metrics, OTLP tracing, and HTTP request monitoring.
 
 ## Configuration

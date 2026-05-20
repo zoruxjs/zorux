@@ -13,8 +13,27 @@
   },
   "files": [
     "dist",
-    "templates"
+    "templates",
+    "src/core",
+    "src/cli",
+    "src/views",
+    "recipes",
+    "presets",
+    ".zorux/patterns"
   ],
+  "exports": {
+    ".": "./src/core/index.ts",
+    "./plugin": "./src/core/define-plugin.ts",
+    "./telemetry": "./src/core/telemetry/index.ts",
+    "./realtime": "./src/core/realtime/index.ts",
+    "./jobs": "./src/core/jobs/index.ts",
+    "./storage": "./src/core/storage/index.ts",
+    "./email": "./src/core/email/index.ts",
+    "./cache": "./src/core/cache/index.ts",
+    "./payments": "./src/core/payments/index.ts",
+    "./search": "./src/core/search/index.ts",
+    "./webhooks": "./src/core/webhooks/index.ts"
+  },
   "scripts": {
     "build": "bun run build:js && bun run build:css && bun run postbuild",
     "build:js": "bun build ./src/cli/index.ts --outdir=./dist --target=bun --external=mongodb --external=postgres --external=mysql2 --external=mysql2/promise --external=ioredis --external=memcached --external=@aws-sdk/lib-dynamodb --external=@aws-sdk/client-dynamodb --external=stripe --external=resend --external=@sendgrid/mail --external=nodemailer --external=@aws-sdk/client-s3 --external=graphql --external=meilisearch",

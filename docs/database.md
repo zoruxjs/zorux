@@ -1,5 +1,9 @@
 # Database
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux supports 7 database providers with a unified adapter interface. Switch providers by changing one line in `app.yaml`.
 
 ## Configuration

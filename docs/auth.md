@@ -1,5 +1,9 @@
 # Authentication
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux includes a complete authentication system with 8 auth methods, 36 OAuth providers, organizations/teams, and enterprise-grade security.
 
 ## Overview

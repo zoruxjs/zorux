@@ -1,5 +1,9 @@
 # Architecture
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 Zorux is built on a compilation pipeline that transforms a single YAML file into a complete full-stack application.
 
 ## Overview

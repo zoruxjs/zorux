@@ -1,5 +1,9 @@
 # CLI Reference
 
+<!-- maturity: ✅ Stable -->
+> **✅ Stable** — This feature is ready for production
+
+
 The Zorux CLI provides commands for project creation, development, code generation, database management, deployment, and more.
 
 ## Installation
