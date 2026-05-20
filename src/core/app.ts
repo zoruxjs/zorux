@@ -31,6 +31,7 @@ import { registerAuditRoutes } from "./audit"
 export interface AppInstance {
   fetch: (req: Request) => Promise<Response>
   start: (port?: number) => void
+  _app?: any // Access to underlying Hono app (for dev tools)
 }
 
 export async function createApp(rootDir: string): Promise<AppInstance> {
@@ -264,6 +265,7 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
 
   const appInstance: AppInstance = {
     fetch: (req) => app.fetch(req),
+    _app: app,
     start: (port = parseInt(process.env.PORT || "3000")) => {
       // Set cache buster for assets
       const assetCB = Date.now().toString(36)
