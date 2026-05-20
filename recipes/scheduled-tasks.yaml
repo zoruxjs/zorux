@@ -1,0 +1,34 @@
+# recipe: scheduled-tasks
+# Adds scheduled task management
+name: scheduled-tasks
+description: Adds scheduled tasks with execution logging
+requires:
+  jobs: true
+patch:
+  models:
+    ScheduledTask:
+      fields:
+        name: string required unique
+        handler: string required
+        schedule: string required
+        enabled: bool default:true
+        maxRetries: int default:3
+        timeout: int default:300
+      timestamps: true
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+    TaskExecution:
+      fields:
+        task: ScheduledTask
+        status: string enum:running,success,failed default:running
+        output: text
+        error: string
+        startedAt: string
+        finishedAt: string
+      timestamps: true
+      policies:
+        list: admin
+        read: admin

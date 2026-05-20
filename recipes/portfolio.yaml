@@ -1,0 +1,64 @@
+# recipe: portfolio
+# Adds portfolio/project showcase
+name: portfolio
+description: Adds projects, tags, testimonials, contact form
+requires:
+  auth: false
+patch:
+  models:
+    Project:
+      fields:
+        title: string required
+        slug: string unique
+        description: text
+        body: text
+        image: file
+        url: string
+        status: string enum:draft,published default:draft
+        sortOrder: int default:0
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin
+    ProjectTag:
+      fields:
+        name: string required unique
+        color: string default:#6366f1
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin
+    Testimonial:
+      fields:
+        name: string required
+        role: string
+        company: string
+        avatar: file
+        body: text required
+        rating: int min:1 max:5 default:5
+        status: string enum:pending,approved default:pending
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: "*"
+        update: admin
+        delete: admin
+    ContactMessage:
+      fields:
+        name: string required
+        email: email required
+        subject: string required
+        body: text required
+        read: bool default:false
+      timestamps: true
+      policies:
+        list: admin
+        read: admin
+        create: "*"
+        delete: admin

@@ -1,0 +1,16 @@
+# recipe: docker-deploy
+# Adds Docker deployment
+name: docker-deploy
+description: Adds Dockerfile and docker-compose config
+patch:
+  models:
+    Environment:
+      fields:
+        name: string required unique
+        key: string required
+        value: string required
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin

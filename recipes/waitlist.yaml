@@ -1,0 +1,25 @@
+# recipe: waitlist
+# Adds waitlist with referral codes and invite management
+name: waitlist
+description: Adds waitlist signup, referral codes, and invite system
+
+requires:
+  auth: false
+
+patch:
+  models:
+    WaitlistEntry:
+      fields:
+        email: email unique required
+        name: string
+        status: string enum:pending,approved,invited,joined default:pending
+        position: int
+        referralCode: string unique
+        referredBy: string
+      timestamps: true
+      policies:
+        list: admin
+        read: admin
+        create: "*"
+        update: admin
+        delete: admin

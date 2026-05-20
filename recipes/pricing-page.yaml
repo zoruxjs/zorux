@@ -1,0 +1,35 @@
+# recipe: pricing-page
+# Adds pricing plans and features
+name: pricing-page
+description: Adds pricing plans with feature comparison
+requires:
+  admin: true
+patch:
+  models:
+    Plan:
+      fields:
+        name: string required unique
+        slug: string unique
+        description: text
+        price: float required
+        interval: string enum:month,year default:month
+        featured: bool default:false
+        sortOrder: int default:0
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin
+    PlanFeature:
+      fields:
+        plan: Plan
+        name: string required
+        included: bool default:true
+        limit: string
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin

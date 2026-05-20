@@ -1,0 +1,87 @@
+# recipe: ecommerce
+# Adds e-commerce (Product, Variant, Cart, Order, Review)
+name: ecommerce
+description: Adds products, variants, cart, orders, and reviews
+
+requires:
+  auth: true
+
+patch:
+  models:
+    Product:
+      fields:
+        name: string required
+        slug: string unique
+        description: text
+        price: float required
+        comparePrice: float
+        sku: string unique
+        stock: int default:0
+        status: string enum:active,draft,archived default:draft
+        images: text
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin
+
+    ProductVariant:
+      fields:
+        name: string required
+        price: float
+        sku: string unique
+        stock: int default:0
+        product: Product
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin
+
+    Cart:
+      fields:
+        user: User
+        items: text
+        total: float
+      timestamps: true
+      policies:
+        list: admin
+        read: owner
+        create: authenticated
+        update: owner
+        delete: owner
+
+    Order:
+      fields:
+        user: User
+        items: text
+        total: float
+        status: string enum:pending,paid,shipped,delivered,cancelled default:pending
+        shippingAddress: text
+        paymentMethod: string
+      timestamps: true
+      policies:
+        list: admin
+        read: owner
+        create: authenticated
+        update: admin
+        delete: admin
+
+    Review:
+      fields:
+        product: Product
+        user: User
+        rating: int default:5 min:1 max:5
+        title: string
+        body: text
+        status: string enum:pending,approved,rejected default:pending
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: authenticated
+        update: owner
+        delete: admin

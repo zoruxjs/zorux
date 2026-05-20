@@ -34,9 +34,23 @@ export async function recipeCommand(args: string[]) {
   console.log("\n  📖 Applying recipe: " + recipe.name)
   console.log("  " + recipe.description + "\n")
 
-  // Apply patch to app.yaml
+  // Validate requirements
   const appYaml = load(readFileSync(appYamlPath, "utf-8")) as any
+  const reqs = recipe.requires || {}
+  if (reqs.auth && !appYaml.auth) {
+    console.error("  ❌ Recipe requires auth to be configured in app.yaml")
+    process.exit(1)
+  }
+  if (reqs.email && !appYaml.email) {
+    console.error("  ❌ Recipe requires email provider to be configured in app.yaml")
+    process.exit(1)
+  }
+  if (reqs.admin && appYaml.type === "api") {
+    console.error("  ❌ Recipe requires admin (type: fullstack or web), but type is api")
+    process.exit(1)
+  }
 
+  // Apply patch to app.yaml
   if (recipe.patch?.models) {
     if (!appYaml.models) appYaml.models = {}
     for (const [mname, mdef] of Object.entries(recipe.patch.models)) {

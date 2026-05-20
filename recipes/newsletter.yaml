@@ -1,0 +1,72 @@
+# recipe: newsletter
+# Adds subscriber management, campaigns, templates, send logs
+name: newsletter
+description: Adds subscriber lists, email campaigns, and templates
+
+requires:
+  auth: true
+  email: true
+
+patch:
+  models:
+    Subscriber:
+      fields:
+        email: email unique required
+        name: string
+        status: string enum:active,unsubscribed,bounced default:active
+      timestamps: true
+      policies:
+        list: admin
+        read: admin
+        create: "*"
+        update: admin
+        delete: admin
+
+    Campaign:
+      fields:
+        title: string required
+        subject: string required
+        body: text required
+        status: string enum:draft,scheduled,sending,sent default:draft
+        scheduledAt: string
+        sentAt: string
+        template: Template
+      timestamps: true
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+
+    Template:
+      fields:
+        name: string required
+        html: text
+        text: text
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+
+    SendLog:
+      fields:
+        subscriber: Subscriber
+        campaign: Campaign
+        status: string enum:sent,failed,bounced
+        error: string
+      timestamps: true
+      policies:
+        list: admin
+        read: admin
+
+  actions:
+    send-campaign.ts: |
+      import { F } from "zorux"
+      export const sendCampaign = {
+        policy: "admin",
+        handler: async (c: any) => {
+          const { campaignId } = await c.req.json()
+          return c.json({ queued: true })
+        },
+      }

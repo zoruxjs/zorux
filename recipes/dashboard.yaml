@@ -1,0 +1,32 @@
+# recipe: dashboard
+# Adds KPI tracking, charts, and metrics
+name: dashboard
+description: Adds KPI definitions, chart configs, and metric tracking
+requires:
+  admin: true
+patch:
+  models:
+    KpiDefinition:
+      fields:
+        name: string required unique
+        description: text
+        query: text
+        refreshInterval: int default:300
+        unit: string
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+    ChartConfig:
+      fields:
+        title: string required
+        type: string enum:line,bar,pie,area default:bar
+        kpi: KpiDefinition
+        options: text
+        width: int default:6
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin

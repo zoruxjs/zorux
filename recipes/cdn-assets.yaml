@@ -1,0 +1,25 @@
+# recipe: cdn-assets
+# Adds file upload and image optimization
+name: cdn-assets
+description: Adds file upload management
+requires:
+  storage: true
+patch:
+  models:
+    Upload:
+      fields:
+        name: string required
+        path: string required
+        mimeType: string
+        size: int
+        width: int
+        height: int
+        alt: string
+        user: User
+      timestamps: true
+      policies:
+        list: admin
+        read: "*"
+        create: authenticated
+        update: owner
+        delete: admin

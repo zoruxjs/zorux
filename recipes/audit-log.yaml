@@ -1,0 +1,21 @@
+# recipe: audit-log
+# Adds audit trail for compliance
+name: audit-log
+description: Adds audit trail tracking all data changes
+
+patch:
+  models:
+    AuditEvent:
+      fields:
+        action: string required
+        modelName: string required
+        modelId: int
+        userId: int
+        userName: string
+        changes: text
+        ip: string
+        userAgent: string
+      timestamps: true
+      policies:
+        list: admin
+        read: admin

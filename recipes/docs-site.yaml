@@ -1,0 +1,40 @@
+# recipe: docs-site
+# Adds documentation site (Doc, DocGroup, search)
+name: docs-site
+description: Adds documentation site with groups, docs, and search
+
+requires:
+  auth: true
+
+patch:
+  models:
+    Doc:
+      fields:
+        title: string required max:200
+        slug: string unique
+        content: text required
+        excerpt: text
+        group: DocGroup
+        sortOrder: int default:0
+        status: string enum:draft,published,archived default:draft
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: authenticated
+        update: owner
+        delete: admin
+
+    DocGroup:
+      fields:
+        name: string required
+        slug: string unique
+        sortOrder: int default:0
+        description: text
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin

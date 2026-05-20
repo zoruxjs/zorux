@@ -1,0 +1,35 @@
+# recipe: webhooks-out
+# Adds outgoing webhooks with retry
+name: webhooks-out
+description: Adds outgoing webhook endpoints and delivery logs
+requires:
+  auth: true
+  jobs: true
+patch:
+  models:
+    WebhookEndpoint:
+      fields:
+        name: string required
+        url: string required
+        secret: string
+        events: string
+        enabled: bool default:true
+        retryCount: int default:3
+      timestamps: true
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+    WebhookDelivery:
+      fields:
+        endpoint: WebhookEndpoint
+        event: string
+        payload: text
+        response: text
+        status: string enum:success,failed,pending default:pending
+        attempt: int default:1
+      timestamps: true
+      policies:
+        list: admin
+        read: admin

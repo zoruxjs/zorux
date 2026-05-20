@@ -1,0 +1,44 @@
+# recipe: notifications
+# Adds notification templates, channels, and user preferences
+name: notifications
+description: Adds multi-channel notifications with templates and preferences
+
+requires:
+  auth: true
+
+patch:
+  models:
+    NotificationTemplate:
+      fields:
+        name: string required unique
+        subject: string required
+        body: text required
+        channel: string enum:email,push,in_app default:email
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+
+    NotificationChannel:
+      fields:
+        name: string required
+        type: string enum:email,push,sms,webhook
+        config: text
+        enabled: bool default:true
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+
+    UserNotificationPreference:
+      fields:
+        user: User
+        template: NotificationTemplate
+        channel: string enum:email,push,in_app
+        enabled: bool default:true
+      policies:
+        list: admin
+        read: owner
+        update: owner

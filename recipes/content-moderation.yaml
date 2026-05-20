@@ -1,0 +1,34 @@
+# recipe: content-moderation
+# Adds content moderation with reports
+name: content-moderation
+description: Adds content reporting and moderation queue
+requires:
+  auth: true
+  admin: true
+patch:
+  models:
+    Report:
+      fields:
+        reason: string required
+        description: text
+        reportedBy: User
+        modelName: string required
+        modelId: int required
+        status: string enum:pending,reviewed,dismissed default:pending
+      timestamps: true
+      policies:
+        list: admin
+        read: admin
+        create: authenticated
+        update: admin
+        delete: admin
+    ModerationAction:
+      fields:
+        report: Report
+        action: string enum:warn,remove,ban,dismiss
+        note: text
+        performedBy: User
+      timestamps: true
+      policies:
+        list: admin
+        create: admin

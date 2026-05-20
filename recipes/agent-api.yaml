@@ -1,0 +1,60 @@
+# recipe: agent-api
+# Adds AI agent API (Thread, Message, Run)
+name: agent-api
+description: Adds AI agent management with threads and messages
+requires:
+  auth: true
+patch:
+  models:
+    Agent:
+      fields:
+        name: string required
+        model: string default:gpt-4
+        instructions: text
+        tools: text
+        user: User
+      timestamps: true
+      policies:
+        list: admin
+        create: authenticated
+        update: owner
+        delete: admin
+    Thread:
+      fields:
+        title: string
+        agent: Agent
+        user: User
+        metadata: text
+      timestamps: true
+      policies:
+        list: admin
+        read: owner
+        create: authenticated
+        update: owner
+        delete: admin
+    Message:
+      fields:
+        thread: Thread
+        role: string enum:user,assistant,system
+        content: text required
+        metadata: text
+      timestamps: true
+      policies:
+        list: admin
+        read: owner
+        create: authenticated
+    Run:
+      fields:
+        thread: Thread
+        agent: Agent
+        status: string enum:queued,running,completed,failed default:queued
+        input: text
+        output: text
+        error: string
+        startedAt: string
+        finishedAt: string
+      timestamps: true
+      policies:
+        list: admin
+        read: owner
+        create: authenticated

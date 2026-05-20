@@ -1,0 +1,24 @@
+# recipe: api-keys
+# Adds API key management with scopes and rate limits
+name: api-keys
+description: Adds API key generation, scopes, and rate limiting
+
+requires:
+  auth: true
+
+patch:
+  models:
+    ApiKey:
+      fields:
+        name: string required
+        key: string required unique
+        scopes: string enum:read,write,admin default:read
+        lastUsedAt: string
+        expiresAt: string
+        user: User
+      timestamps: true
+      policies:
+        list: admin
+        create: authenticated
+        update: owner
+        delete: admin

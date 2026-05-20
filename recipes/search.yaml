@@ -1,0 +1,31 @@
+# recipe: search
+# Adds search indexing configuration
+name: search
+description: Adds search index management with synonyms and boost config
+
+requires:
+  auth: true
+
+patch:
+  models:
+    SearchIndex:
+      fields:
+        modelName: string required
+        fieldName: string required
+        weight: int default:1
+        analyzer: string
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
+
+    SearchSynonym:
+      fields:
+        term: string required
+        synonyms: string required
+      policies:
+        list: admin
+        create: admin
+        update: admin
+        delete: admin
