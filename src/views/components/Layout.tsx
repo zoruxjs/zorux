@@ -32,10 +32,10 @@ window.__toggleTheme=function(){var c=document.documentElement.getAttribute("dat
 var TK=(document.cookie.match(/token=([^;]+)/)||[])[1]
 if(TK){
 function ld(){fetch("/api/notifications",{headers:{Authorization:"Bearer "+TK}}).then(function(r){return r.json()}).then(function(d){
-var b=document.getElementById("nf"),c=document.getElementById("nc")
-if(b&&c){c.textContent=d.unread||"";c.style.display=d.unread>0?"flex":"none"}
+var c=document.getElementById("nc")
+if(c){c.textContent=d.unread||"";c.style.display=d.unread>0?"inline-flex":"none"}
 var l=document.getElementById("nl")
-if(l&&d.notifications){l.innerHTML=d.notifications.slice(0,5).map(function(n){return '<div class="notif-item'+(n.read_at?' notif-read':'')+'" onclick="mk('+n.id+')"><div class="notif-title">'+n.title+'</div><div class="notif-body">'+(n.body||"")+'</div></div>'}).join("")}
+if(l&&d.notifications){l.innerHTML=d.notifications.slice(0,5).map(function(n){return '<div class="flex items-center gap-2 p-3 border-b border-base-200 hover:bg-base-200 cursor-pointer'+(n.read_at?' opacity-40':'')+'" onclick="mk('+n.id+')"><div><div class="text-sm font-medium">'+n.title+'</div><div class="text-xs opacity-60">'+(n.body||"")+'</div></div></div>'}).join("")}
 }).catch(function(){})}
 window.mk=function(id){fetch("/api/notifications/"+id+"/read",{method:"PUT",headers:{Authorization:"Bearer "+TK}}).then(function(){ld()})}
 window.mkAll=function(){fetch("/api/notifications/read-all",{method:"POST",headers:{Authorization:"Bearer "+TK}}).then(function(){ld()})}
@@ -48,40 +48,41 @@ ld();setInterval(ld,30000)
         <div class="drawer lg:drawer-open">
           <input id="st" type="checkbox" class="drawer-toggle" />
           <div class="drawer-content flex flex-col">
-            <div class="navbar bg-base-100/80 border-b border-base-200 sticky top-0 z-20">
+            <nav class="navbar bg-base-100/80 backdrop-blur border-b border-base-200 sticky top-0 z-20">
               <div class="flex-1 flex items-center gap-2">
                 <label for="st" class="btn btn-ghost btn-sm drawer-button lg:hidden">☰</label>
                 <span class="font-semibold text-sm tracking-tight">{title}</span>
               </div>
-              <div class="flex gap-0.5 items-center">
-                <button id="theme-btn" onclick="__toggleTheme()" class="btn btn-ghost btn-square btn-sm" title="Theme" style="font-size:1.1rem">🌙</button>
-                <div class="notif-wrapper">
-                  <button id="nf" onclick="document.getElementById('nd').classList.toggle('visible')" class="btn btn-ghost btn-square btn-sm" style="font-size:1.1rem;position:relative">
-                    🔔<span id="nc" class="notif-count"></span>
+              <div class="flex gap-1 items-center">
+                <button id="theme-btn" onclick="__toggleTheme()" class="btn btn-ghost btn-square btn-sm tooltip tooltip-bottom" data-tip="Theme" style="font-size:1.1rem">🌙</button>
+                <div class="dropdown dropdown-end">
+                  <button id="nf" tabindex="0" role="button" class="btn btn-ghost btn-square btn-sm relative" style="font-size:1.1rem">
+                    🔔
+                    <span id="nc" class="badge badge-error badge-xs absolute -top-1 -right-1 hidden"></span>
                   </button>
-                  <div id="nd" class="notif-dropdown">
+                  <div tabindex="0" class="dropdown-content card card-sm bg-base-100 border border-base-200 shadow-xl mt-2 w-80 z-50">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-base-200">
                       <strong class="text-sm font-medium">Notifications</strong>
                       <button onclick="mkAll()" class="btn btn-ghost btn-xs text-primary">Mark all read</button>
                     </div>
-                    <div id="nl"></div>
+                    <div id="nl" class="max-h-80 overflow-y-auto"></div>
                     <div class="p-2 text-center border-t border-base-200">
                       <a href="/admin/notifications" class="text-xs opacity-40 hover:opacity-80 no-underline">View all</a>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <main>{children}</main>
+            </nav>
+            <main class="p-4 lg:p-6">{children}</main>
           </div>
-          <div class="drawer-side">
+          <div class="drawer-side z-30">
             <label for="st" aria-label="close sidebar" class="drawer-overlay"></label>
             <div class="bg-base-200 min-h-full w-64 p-3 flex flex-col gap-1">
               <div class="flex items-center gap-2.5 px-3 py-3 mb-1">
-                <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-sm">Z</div>
+                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-content font-bold text-sm">Z</div>
                 <span class="font-bold text-sm tracking-tight">Zorux</span>
               </div>
-              <ul class="menu px-0 flex-1 gap-0.5">
+              <ul class="menu px-0 flex-1 gap-px">
                 <li class="menu-title">Admin</li>
                 <li><a href="/admin" class={isActive("dashboard")}>Dashboard</a></li>
                 {models?.map(m => (
@@ -108,9 +109,6 @@ ld();setInterval(ld,30000)
             </div>
           </div>
         </div>
-        <script>{`
-document.addEventListener("click",function(e){var d=document.getElementById("nd");if(d&&!e.target.closest(".notif-wrapper"))d.classList.remove("visible")})
-`}</script>
       </body>
     </html>
   )
