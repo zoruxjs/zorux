@@ -16,8 +16,9 @@ export async function contextCommand(args: string[]) {
   const modelNames = Object.keys(models)
   const budgetArg = args.find(a => a.startsWith("--budget="))
   const budget = budgetArg ? parseInt(budgetArg.split("=")[1]) : 0
-  const outputArg = args.find(a => a.startsWith("--output="))
-  const outputPath = outputArg ? join(process.cwd(), outputArg.split("=")[1]) : null
+  const outputIdx = args.indexOf("--output")
+  const outputArg = outputIdx >= 0 && args.length > outputIdx + 1 ? args[outputIdx + 1] : args.find(a => a.startsWith("--output="))?.split("=")[1]
+  const outputPath = outputArg ? (outputArg.includes("/") || outputArg.includes("\\") ? outputArg : join(process.cwd(), outputArg)) : null
 
   const lines: string[] = []
   const w = (s: string) => lines.push(s)

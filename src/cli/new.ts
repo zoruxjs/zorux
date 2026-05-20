@@ -28,7 +28,9 @@ export async function newCommand(name: string, options: NewOptions) {
   const dir = import.meta.dir
   const presetDir = existsSync(join(dir, '../../presets'))
     ? join(dir, '../../presets')
-    : join(dir, '../presets')  // bundled: dist/ → presets/
+    : existsSync(join(dir, '../presets'))
+      ? join(dir, '../presets')
+      : join(process.cwd(), 'presets')
   const presetPath = join(presetDir, preset + '.yaml')
   const presetYaml = existsSync(presetPath)
     ? (load(readFileSync(presetPath, 'utf-8')) as any)

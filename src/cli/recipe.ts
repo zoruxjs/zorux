@@ -21,9 +21,11 @@ export async function recipeCommand(args: string[]) {
 
   // Load recipe
   const dir2 = import.meta.dir
-  const recipeDir = existsSync(join(dir2, "../../recipes"))
+  let recipeDir = existsSync(join(dir2, "../../recipes"))
     ? join(dir2, "../../recipes")
-    : join(dir2, "../recipes")
+    : existsSync(join(dir2, "../recipes"))
+      ? join(dir2, "../recipes")
+      : join(process.cwd(), "recipes")
   const recipePath = join(recipeDir, name + ".yaml")
   if (!existsSync(recipePath)) {
     console.error("[Zorux] Recipe '" + name + "' not found in recipes/")
