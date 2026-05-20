@@ -555,6 +555,52 @@ pluginConfig:
 | `my-plugin` | `plugins/my-plugin.ts` or `plugins/my-plugin/index.ts` |
 | `npm-package` | npm package `npm-package` (tries `zorux-plugin-npm-package` first, falls back to `kai-plugin-npm-package` for legacy compat) |
 
+### Strict Mode
+
+Enable quality gates for production projects.
+
+```yaml
+zorux:
+  strict: true
+packages:
+  policy: allowlist
+  allowed:
+    - stripe
+    - resend
+    - sharp
+```
+
+When `strict: true`, `zorux verify` enforces:
+- Package allowlist — only packages in `packages.allowed` can be installed
+- Public routes must have rate limiting or security middleware
+- Actions must not have empty `catch {}` blocks
+- Actions must not use `any` excessively
+
+### Change YAML (for `zorux apply`)
+
+Structured change files describe intent rather than implementation.
+
+```yaml
+# change.yaml
+change:
+  type: add_model         # add_model | add_field | add_recipe | add_action | add_page
+  model: Invoice
+  fields:
+    amount: number required
+    status: string enum:draft,paid,void
+  timestamps: true
+  policies:
+    create: authenticated
+    list: owner
+  admin:
+    columns: [amount, status, created_at]
+```
+
+Apply:
+```bash
+zorux apply change.yaml
+```
+
 ## Complete Example
 
 ```yaml

@@ -42,11 +42,34 @@ The loader tries the exact name first, then prepends `zorux-plugin-` (with legac
 
 ## Plugin Interface
 
+Zorux provides a typed `definePlugin()` helper for safer plugin creation.
+
 ```typescript
-interface KaiPlugin {
-  name: string
-  version?: string
-  description?: string
+import { definePlugin } from "zorux/plugin"
+
+export default definePlugin({
+  name: "my-plugin",
+  version: "1.0.0",
+  description: "Does something useful",
+  ownsRoutes: ["/api/custom"],
+  readsModels: ["User"],
+  env: ["MY_API_KEY"],
+
+  onRoutes(app) {
+    app.get("/api/custom", (c) => c.json({ ok: true }))
+  },
+})
+```
+
+Benefits of `definePlugin()`:
+- Validates that `name` is provided
+- Warns if plugin has neither `onRoutes` nor `onStart`
+- Provides TypeScript autocompletion
+- Self-documents the plugin's impact (routes, models, env vars)
+
+### Legacy Interface
+
+The traditional interface is still supported:
   dependsOn?: string[]
 
   // Lifecycle hooks

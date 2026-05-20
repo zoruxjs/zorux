@@ -720,6 +720,125 @@ Adds to `package.json` scripts:
 "preinstall": "zorux guard install"
 ```
 
+### `zorux apply`
+
+Apply a structured change YAML to the project.
+
+```bash
+zorux apply <change.yaml>
+```
+
+Change files describe intent rather than implementation. Zorux generates the correct code.
+
+**Supported change types:**
+
+| Type | Description |
+|---|---|
+| `add_model` | Add a new model with fields and policies |
+| `add_field` | Add a field to an existing model |
+| `add_recipe` | Apply a recipe by name |
+| `add_action` | Create a custom action file |
+| `add_page` | Create a DaisyUI page |
+
+**Example:**
+
+```yaml
+# change.yaml
+change:
+  type: add_model
+  model: Invoice
+  fields:
+    amount: number required
+    status: string enum:draft,paid,void
+  timestamps: true
+  policies:
+    create: authenticated
+    list: owner
+  admin:
+    columns: [amount, status, created_at]
+```
+
+```bash
+zorux apply change.yaml
+```
+
+Also accepts stdin:
+```bash
+cat change.yaml | zorux apply -
+```
+
+### `zorux lint ai`
+
+Detect AI-generated code anti-patterns in the project.
+
+```bash
+zorux lint ai
+```
+
+**15+ checks:**
+
+| Check | Severity |
+|---|---|
+| Manual CRUD route for declared model | error |
+| Express/Fastify installed unnecessarily | error |
+| Prisma/Drizzle duplicating app.yaml | error |
+| Auth libraries (passport, bcrypt, JWT) installed | warn |
+| `any` used excessively in actions/plugins | warn |
+| Empty `catch {}` block | warn |
+| File >300 lines | warn |
+| Hardcoded secrets detected | error |
+| `fetch()` without SDK client | warn |
+| Raw SQL without prepared statement | warn |
+| Public route without rate limiting | warn |
+| Generated file edited | warn |
+
+### `zorux quality`
+
+Show code quality metrics and AI risk score.
+
+```bash
+zorux quality
+```
+
+Output:
+```
+Generated: 5 models → 64 routes
+Custom code: 4 files, 1,240 lines
+Manual routes: 3
+External packages: 8
+Test files: 12
+
+AI Risk Score: 15/100 (low)
+```
+
+### `zorux review`
+
+Heuristic diff review of staged changes.
+
+```bash
+zorux review
+```
+
+Checks:
+- New public routes without rate limiting
+- Routes duplicating generated CRUD
+- Models without dedicated tests
+- Public create without validation
+- New npm packages that duplicate built-in functionality
+
+### `zorux fix ai`
+
+Apply automatic codemods to fix common issues.
+
+```bash
+zorux fix ai
+```
+
+**Automatic fixes:**
+- Replaces empty `catch {}` with `catch (err) { console.error(...) }`
+- Adds `JWT_SECRET` to `.env` if missing
+- Reports excessive `any` usage for manual review
+
 ### `zorux add field`
 
 Add a field to an existing model.

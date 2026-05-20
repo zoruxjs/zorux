@@ -178,7 +178,31 @@ zorux decisions                  # Decision tree
 # Modify
 zorux recipe add blog            # Add blog (Post + Category + Comment)
 zorux recipe add teams           # Add org teams
-zorux recipe add billing          # Add Stripe billing
+zorux recipe add billing         # Add Stripe subscriptions
+zorux recipe add docs-site       # Add Doc + DocGroup + search
+zorux recipe add newsletter      # Add Subscriber + Campaign + Template
+zorux recipe add api-keys        # Add ApiKey + Scope + RateLimit
+zorux recipe add audit-log       # Add audit trail
+zorux recipe add waitlist        # Add waitlist + referral codes
+zorux recipe add ecommerce       # Add Product + Variant + Cart + Order + Review
+zorux recipe add notifications   # Add templates + channels + preferences
+zorux recipe add search          # Add search index + synonyms
+zorux recipe add dashboard       # Add KPI + chart configs
+zorux recipe add pricing-page    # Add Plan + Feature + tier
+zorux recipe add docker-deploy   # Add Dockerfile + compose
+zorux recipe add cdn-assets      # Add file upload + optimization
+zorux recipe add webhooks-out    # Add webhook endpoints + delivery
+zorux recipe add scheduled-tasks # Add task scheduler
+zorux recipe add agent-api       # Add Agent + Thread + Message + Run
+zorux recipe add content-moderation # Add Report + Flag + queue
+zorux recipe add portfolio       # Add Project + Tag + Testimonial + Contact
+
+# Quality
+zorux lint ai                    # Detect AI anti-patterns (15+ checks)
+zorux quality                    # Code quality metrics + AI risk score
+zorux review                     # Diff review heuristics
+zorux fix ai                     # Automatic codemods
+zorux apply change.yaml          # Apply structured change
 
 # Before making changes
 zorux diff                       # Semantic diff vs manifest
