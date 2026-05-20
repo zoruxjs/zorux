@@ -1,20 +1,20 @@
 # Zorux
 
-**AI-native multi-platform framework. One YAML file generates API, Admin, Mobile, Desktop, PWA, Auth, Payments, Real-time, and Tests.**
+**AI-native full-stack framework. One YAML file generates API, Admin, Mobile, Desktop, PWA, Auth, Payments, Real-time, Tests, and Forms.**
 
 [![npm version](https://img.shields.io/npm/v/zorux.svg)](https://www.npmjs.com/package/zorux)
 [![npm downloads](https://img.shields.io/npm/dm/zorux.svg)](https://www.npmjs.com/package/zorux)
-[![Tests](https://img.shields.io/badge/tests-371%20passing-brightgreen)](#)
+[![Tests](https://img.shields.io/badge/tests-397%20passing-brightgreen)](#)
 [![License](https://img.shields.io/badge/license-MIT-red.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/bun-1.2%2B-black)](https://bun.sh)
 
 ```bash
 npm install -g zorux
-zorux new my-app --saas
-cd my-app && zorux dev
+zorux new my-app --preset saas
+cd my-app && bun install && zorux dev
 ```
 
-**API → http://localhost:3000/api · Admin → http://localhost:3000/admin · Swagger → http://localhost:3000/api/docs**
+**API → `http://localhost:3000/api` · Admin → `http://localhost:3000/admin` · Swagger → `http://localhost:3000/api/docs` · Forms → `http://localhost:3000/forms/<name>`**
 
 ---
 
@@ -24,12 +24,13 @@ cd my-app && zorux dev
 
 | | Zorux | Traditional |
 |---|---|---|
-| Config files | 1 (`app.yaml`) | 10–30 |
-| Packages to install | 0 (all built-in) | 20–50 |
-| AI tokens to scaffold an app | ~500 | ~5,000 |
-| Time to first CRUD | 10 seconds | 30–60 min |
-| Auth providers | 35 built-in | Manual setup each |
-| Platforms from one schema | 6 (API, Admin, Mobile, Desktop, PWA, GraphQL) | 1 |
+| Config files | **1** (`app.yaml`) | 10–30 |
+| Packages to install | **0** (all built-in) | 20–50 |
+| AI tokens to scaffold an app | **~500** | ~5,000 |
+| Time to first CRUD | **10 seconds** | 30–60 min |
+| Auth providers | **35 built-in** | Manual setup each |
+| Platforms from one schema | **7** (API, Admin, Mobile, Desktop, PWA, GraphQL, Forms) | 1 |
+| CLI commands | **55+** | 10–20 |
 
 ---
 
@@ -40,32 +41,29 @@ cd my-app && zorux dev
 npm install -g zorux
 
 # Create a full SaaS app
-zorux new my-app --saas
+zorux new my-app --preset saas
 
 # Start developing
-cd my-app && zorux dev
+cd my-app && bun install && zorux dev
 ```
 
-### Project types
+### Presets
 
-| Flag | Generates |
+| Preset | Generates |
 |---|---|
-| `--api` | REST API + Swagger |
-| `--web` | API + Admin Panel |
-| `--mobile` | API + Expo (React Native) |
-| `--fullstack` | API + Admin + Web UI |
-| `--saas` | API + Admin + Auth + Payments + Tests |
-| `--all` | API + Admin + Mobile + Desktop + PWA |
+| `--preset api` | REST API + Swagger |
+| `--preset web` | API + Admin + Landing page |
+| `--preset saas` | API + Admin + Auth + Payments + Teams |
+| `--preset blog` | Blog with public posts, categories |
+| `--minimal` | Minimal project (no example pages) |
 
-### UI frameworks
+### UI Framework
 
-```
-zorux new my-app --saas --ui tailwind
-zorux new my-app --fullstack --ui daisyui
-zorux new my-app --saas --ui antd
+```bash
+zorux new my-app --preset saas --ui daisyui
 ```
 
-**6 themes:** Tailwind, DaisyUI, Ant Design, MUI, Chakra, Mantine, Headless
+**7 themes:** Tailwind, DaisyUI, Ant Design, MUI, Chakra, Mantine, Headless
 
 ---
 
@@ -73,6 +71,7 @@ zorux new my-app --saas --ui antd
 
 ```yaml
 name: my-app
+type: fullstack
 database:
   provider: sqlite
 
@@ -84,6 +83,9 @@ models:
       status: string enum:draft,published default:draft
       author: User
     timestamps: true
+    hooks:
+      beforeCreate: actions/validate-post.ts
+      afterCreate: actions/notify-subscribers.ts
     policies:
       list: "*"
       create: authenticated
@@ -98,6 +100,14 @@ auth:
     google:
       clientId: ${GOOGLE_CLIENT_ID}
       clientSecret: ${GOOGLE_CLIENT_SECRET}
+
+forms:
+  subscribe:
+    title: Newsletter
+    model: Subscriber
+    fields: [email, name]
+    button: Subscribe
+    honeypot: true
 
 cache:
   provider: memory
@@ -116,56 +126,60 @@ AI agents can read, understand, and modify your entire app by editing this singl
 ## Features
 
 ### Authentication & Authorization
-- **35 OAuth providers** — Google, GitHub, Apple, Discord, Twitter, LinkedIn, Slack, Spotify, Twitch, and 25+ more
-- **WebAuthn / Passkeys** — Passwordless login with biometrics (Fingerprint, Face ID)
+- **35 OAuth providers** — Google, GitHub, Apple, Discord, and 31+ more
+- **WebAuthn / Passkeys** — Passwordless login with biometrics
 - **2FA TOTP** — Google Authenticator, Authy, recovery codes
 - **Magic Link + Email OTP** — Passwordless email login
 - **API Keys** — Scoped, rate-limited, revocable
-- **OAuth 2.0 + OIDC Provider** — Make your app an identity provider with JWKS
-- **Social Account Linking** — Multiple providers, one account
+- **OAuth 2.0 + OIDC Provider** — Make your app an identity provider
 - **Organizations / Teams** — Multi-org with invites and roles
-- **ABAC + RBAC** — Expression engine: `==`, `!=`, `>`, `in`, `matches`, `exists`, `&&`, `||`
-- **Session Management** — Multi-session with refresh tokens
+- **ABAC + RBAC** — Expression engine with recursive descent parser
+- **CRUD Hooks** — beforeCreate, afterCreate, beforeUpdate, afterUpdate, beforeDelete, afterDelete
 
 ### Platform
-- **REST API** — Full CRUD with pagination, sort, search, field filtering, bulk operations, import/export
-- **Admin Panel** — Dashboard with stats, charts, rich text, file upload, email viewer
+- **REST API** — Full CRUD with pagination, sort, search, bulk, import/export
+- **Admin Panel** — DaisyUI 5 + Tailwind CSS 4, sidebar, modal, charts, file upload
 - **Mobile (Expo)** — Full React Native app with typed SDK per model
-- **Desktop (Tauri v2)** — Native Windows/macOS/Linux app with Rust backend
-- **PWA** — Manifest + service worker, installable on any device
+- **Desktop (Tauri v2)** — Native app with Rust backend
+- **PWA** — Manifest + service worker, installable
 - **GraphQL** — Auto-generated schema from models
 - **OpenAPI / Swagger** — Auto-generated docs at `/api/docs`
+- **Declarative Forms** — YAML-defined forms with DaisyUI, validation, honeypot
 
 ### Data & Storage
 - **7 Database Providers** — SQLite, PostgreSQL, MySQL, MongoDB, Cloudflare D1, Supabase, `:memory:`
 - **8 Cache Providers** — Memory, Redis, Upstash, Memcached, DynamoDB, SQLite, Cloudflare KV, Durable Objects
-- **3 Storage Providers** — Local filesystem, S3 (AWS/MinIO/R2/Spaces), Supabase
-- **5 Email Providers** — Sandbox, Log, Resend, SendGrid, SMTP/Nodemailer
+- **3 Storage Providers** — Local, S3 (AWS/MinIO/R2/Spaces), Supabase
+- **5 Email Providers** — Sandbox, Log, Resend, SendGrid, SMTP
 
 ### Payments
 - **Stripe** — Checkout sessions, subscriptions, webhooks, customer portal
 - **Polar** — Alternative payment provider
 
 ### Developer Experience
-- **25+ CLI Commands** — `new`, `dev`, `gen`, `add`, `make`, `seed`, `deploy`, `db`, `test`, `audit`, `scaffold`, `console`, `runner`, `credentials`, `plugin`, `completion`
-- **Hot Reload** — File watcher on `app.yaml`, `actions/`, `plugins/`, `locales/`
-- **Auto-Generated Tests** — Integration, validation, edge cases, security, e2e, fuzz, concurrent
-- **Scaffolds** — Forum, blog, ecommerce, SaaS — pre-built apps with full test suites
-- **Deploy Anywhere** — Docker, Vercel, Netlify, Cloudflare Workers — one command
+- **55+ CLI Commands** — The most complete CLI in its class
+- **20 Recipes** — `zorux recipe add blog|teams|billing|ecommerce|newsletter|agent-api|...`
+- **Live Reload** — EventSource-based browser auto-refresh, CSS-only HMR, polling fallback
+- **AI-Native** — AGENTS.md, CLAUDE.md, cursor rules, copilot instructions auto-generated
+- **Quality Gates** — `zorux lint ai`, `zorux quality`, `zorux review`, `zorux fix ai`
+- **Introspecção** — `zorux inspect`, `zorux explain`, `zorux routes`, `zorux map`, `zorux decisions`, `zorux ownership`, `zorux diff`
+- **Diagnóstico** — `zorux doctor`, `zorux verify`, `zorux token-report`, `zorux snapshot`
+- **Strict Mode** — Package allowlist, security gates, lint enforcement
 
 ### Real-time & Events
 - **WebSocket** — Pub/sub engine with channel-based messaging
 - **Webhooks** — Auto-fire on CRUD with HMAC-SHA256 signing
 - **Background Jobs** — Persistent queues with exponential backoff
-- **Event System** — `emit()`, `on()`, `onAny()` with wildcards and priority
+- **Event System** — `emit()`, `on()`, `onAny()` with wildcards
 - **Notifications** — In-app notification system with read tracking
 
 ### Security
-- **ABAC + RBAC** — Attribute-based access control with recursive descent parser
-- **Audit Log** — Every mutation logged with user, IP, old/new values
+- **ABAC + RBAC** — Attribute-based access control
+- **Audit Log** — Every mutation logged with context
 - **Security Headers** — CSP, rate limiting, CSRF, body size limit
-- **Soft Delete** — `deleted_at` with restore and permanent delete
+- **Soft Delete** — `deleted_at` with restore
 - **Multi-tenancy** — Auto-scoped models by organization
+- **Honeypot** — Anti-spam protection on forms
 
 ---
 
@@ -195,31 +209,73 @@ AI agents can read, understand, and modify your entire app by editing this singl
 
 ---
 
-## CLI Reference
+## CLI Reference (55+ Commands)
+
+```bash
+# Project
+zorux new <name> [--preset api|web|saas|blog] [--minimal]
+zorux dev [port]
+zorux info
+zorux version
+
+# Generate
+zorux gen mobile|desktop|pwa|graphql
+zorux add model|field|page|package|plugin
+
+# Build
+zorux make action|job|migration
+zorux seed [--count N]
+
+# Database
+zorux db migrate [--auto]|reset|rollback|status|schema dump
+
+# Deploy & Test
+zorux deploy [docker|vercel|netlify|cloudflare]
+zorux test [--run|--e2e|--security]
+zorux audit
+
+# Introspect
+zorux inspect [--json]
+zorux explain [app.yaml]
+zorux routes
+zorux map
+zorux diff
+zorux decisions
+zorux ownership <model|/route|field>
+
+# Validate
+zorux verify
+zorux doctor [--verbose]
+zorux quality
+zorux review
+
+# AI & Agents
+zorux context [--budget N] [--output <path>]
+zorux token-report
+zorux snapshot
+zorux agent init
+zorux lint ai
+zorux lint agent
+zorux fix ai
+zorux guard install
+
+# Modify
+zorux recipe add <name>
+zorux apply <change.yaml>
+zorux cleanup
+zorux scaffold <template>
+zorux console
+zorux plugin list|add|remove
+zorux credentials setup|edit|show
+zorux completion bash|zsh|fish
+```
+
+### 20 Available Recipes
 
 ```
-Usage: zorux <command> [options]
-
-Commands:
-  new <name> [--api|--web|--mobile|--fullstack|--saas|--all] [--ui <theme>]
-  dev [port]
-  gen mobile|desktop|pwa|graphql
-  add model <name> <fields...>
-  make action|job|migration <name>
-  seed [--count <n>]
-  deploy docker|vercel|netlify|cloudflare
-  db migrate|reset|rollback|status
-  test [--run|--e2e|--security|--fuzz|--bench]
-  scaffold forum|blog|ecommerce|saas
-  console
-  runner <file>
-  credentials setup|edit|show
-  plugin list|add|remove
-  audit
-  docs
-  info
-  version
-  completion bash|zsh|fish
+blog, teams, billing, docs-site, newsletter, api-keys, audit-log, waitlist,
+ecommerce, notifications, search, dashboard, pricing-page, docker-deploy,
+cdn-assets, webhooks-out, scheduled-tasks, agent-api, content-moderation, portfolio
 ```
 
 ---
@@ -234,6 +290,8 @@ Commands:
 | Authentication | [docs/auth.md](docs/auth.md) |
 | Admin Panel | [docs/admin.md](docs/admin.md) |
 | CLI Reference | [docs/cli.md](docs/cli.md) |
+| Declarative Forms | [docs/forms.md](docs/forms.md) |
+| Patterns | [docs/patterns.md](docs/patterns.md) |
 | Database | [docs/database.md](docs/database.md) |
 | Cache | [docs/cache.md](docs/cache.md) |
 | Storage | [docs/storage.md](docs/storage.md) |
@@ -252,16 +310,28 @@ Commands:
 | Telemetry | [docs/telemetry.md](docs/telemetry.md) |
 | Deploy | [docs/deploy.md](docs/deploy.md) |
 | Architecture | [docs/architecture.md](docs/architecture.md) |
+| LLM Context | [docs/llm/context.md](docs/llm/context.md) |
+
+---
+
+## Maturity
+
+| Level | Features |
+|---|---|
+| **✅ Stable** | API, CRUD, SQLite, Admin, Auth, OpenAPI, Cache, DB migrations, CLI, Forms, Live Reload |
+| **🧪 Beta** | GraphQL, Webhooks, Jobs, Plugins, Feature Flags, Deploy, Recipes |
+| **🔬 Experimental** | Mobile (Expo), Desktop (Tauri), Payments, Multi-DB Providers |
 
 ---
 
 ## Stats
 
-- **13,647** lines of TypeScript
-- **93** source files
-- **371** tests, **0** failures, **636** expectations
-- **47** built-in features
+- **397** tests, **0** failures, **712** expectations
+- **55+** CLI commands
+- **20** built-in recipes
+- **47+** built-in features
 - **0** external runtime dependencies (all optional, lazy-loaded)
+- **~150KB** compiled admin CSS (DaisyUI 5 + Tailwind CSS 4, tree-shaken)
 
 ---
 
@@ -269,10 +339,11 @@ Commands:
 
 - **Runtime:** Bun 1.2+
 - **HTTP:** Hono
-- **Database:** bun:sqlite (native), optional PostgreSQL/MySQL/MongoDB adapters
+- **Admin UI:** DaisyUI 5 + Tailwind CSS 4
+- **Database:** `bun:sqlite` (native), optional PostgreSQL/MySQL/MongoDB adapters
 - **Auth:** Built-in JWT, OAuth 2.0, WebAuthn, TOTP
 - **Real-time:** Native Bun WebSocket
-- **Templates:** JSX (Hono JSX)
+- **Templates:** Hono JSX
 - **Validation:** Zod
 - **CLI:** Commander
 
