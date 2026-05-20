@@ -1,0 +1,41 @@
+# recipe: billing
+# Adds Stripe/Polar subscriptions with plans and customer portal
+name: billing
+description: Adds Stripe payment integration with subscriptions
+
+requires:
+  auth: true
+  admin: true
+
+patch:
+  models:
+    Subscription:
+      fields:
+        plan: string enum:free,pro,enterprise
+        status: string enum:active,canceled,past_due
+        stripeCustomerId: string
+        stripeSubscriptionId: string
+        org: Organization
+      timestamps: true
+      scoped: true
+      policies:
+        list: admin
+        read: authenticated
+        update: admin
+        delete: admin
+
+  email:
+    provider: sandbox
+
+  actions:
+    billing.ts: |
+      import { F } from "zorux"
+
+      export const invoicePaid = {
+        policy: "*",
+        handler: async (c: any) => {
+          const { email, amount } = await c.req.json()
+          console.log(`Invoice ${amount} paid by ${email}`)
+          return c.json({ success: true })
+        },
+      }

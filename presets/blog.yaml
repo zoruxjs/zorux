@@ -1,0 +1,75 @@
+# preset: blog
+# Content site with public posts, categories, comments
+features:
+  auth: true
+  admin: true
+  realtime: true
+
+auth:
+  model: User
+  registration: open
+  roles: [admin, author]
+
+models:
+  User:
+    fields:
+      name: string required
+      email: string unique
+      avatar: file
+    auth: password
+    policies:
+      list: public
+      read: public
+      update: owner
+
+  Post:
+    fields:
+      title: string required max:200
+      slug: string unique
+      body: text required
+      excerpt: text
+      status: string enum:draft,published,archived default:draft
+      author: User
+      category: Category
+    timestamps: true
+    policies:
+      list: public
+      read: public
+      create: authenticated
+      update: owner
+      delete: admin
+
+  Category:
+    fields:
+      name: string required unique
+      slug: string unique
+    timestamps: true
+    policies:
+      list: public
+      read: public
+      create: admin
+      update: admin
+      delete: admin
+
+  Comment:
+    fields:
+      body: text required
+      author: User
+      post: Post
+      status: string enum:pending,approved,spam default:pending
+    timestamps: true
+    policies:
+      list: public
+      read: public
+      create: public
+      update: owner
+      delete: admin
+
+database:
+  provider: sqlite
+
+cache:
+  provider: memory
+
+email:
+  provider: sandbox

@@ -1,0 +1,31 @@
+# preset: web
+# API + Admin Panel + public landing page
+features:
+  auth: true
+  admin: true
+  realtime: true
+
+auth:
+  model: User
+  registration: open
+  roles: [admin, member]
+
+models:
+  User:
+    fields:
+      name: string required
+      email: string unique
+    auth: password
+    policies:
+      list: admin
+      read: authenticated
+      update: owner
+
+database:
+  provider: sqlite
+
+cache:
+  provider: memory
+
+email:
+  provider: sandbox

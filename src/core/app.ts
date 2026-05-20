@@ -1,4 +1,5 @@
 import { join } from "path"
+import { existsSync } from "fs"
 import { parseAppConfig } from "./yaml"
 import { getVersion } from "./version"
 import { compileModels } from "./compiler"
@@ -182,6 +183,27 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
       const { createWebRouter } = await import("../views/pages/web-router")
       await createWebRouter(platform, app)
     } catch {}
+  }
+
+  // Auto-load web/pages/*.tsx by convention (file-based routing)
+  const webPagesDir = join(rootDir, "web", "pages")
+  if (existsSync(webPagesDir)) {
+    try {
+      const { readdirSync } = await import("fs")
+      const files = readdirSync(webPagesDir).filter(f => f.endsWith(".tsx") || f.endsWith(".ts"))
+      for (const file of files) {
+        const name = file.replace(/\.(tsx|ts)$/, "")
+        const routeName = name === "index" ? "" : name
+        const route = "/" + routeName
+        const mod = await import(join(webPagesDir, file))
+        const Component = Object.values(mod)[0] as any
+        if (typeof Component === "function") {
+          app.get(route, (c) => c.html(Component({ appName: config.name || "Zorux" })))
+        }
+      }
+    } catch (e) {
+      // web/pages/ exists but couldn't load pages — non-fatal
+    }
   }
 
   // Apply plugin routes (registered last so they can override admin routes)

@@ -1,0 +1,48 @@
+# recipe: blog
+# Adds Post + Category + Comment models with public routes
+name: blog
+description: Adds blog (posts, categories, comments, public feed)
+
+patch:
+  models:
+    Post:
+      fields:
+        title: string required max:200
+        slug: string unique
+        body: text required
+        excerpt: text
+        status: string enum:draft,published,archived default:draft
+        author: User
+        category: Category
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: authenticated
+        update: owner
+        delete: admin
+
+    Category:
+      fields:
+        name: string required unique
+        slug: string unique
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: admin
+        update: admin
+        delete: admin
+
+    Comment:
+      fields:
+        body: text required
+        author: User
+        post: Post
+      timestamps: true
+      policies:
+        list: "*"
+        read: "*"
+        create: "*"
+        update: owner
+        delete: admin

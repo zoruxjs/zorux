@@ -1,0 +1,27 @@
+# recipe: teams
+# Adds organization/team support with invites
+name: teams
+description: Adds multi-org teams with invites and roles
+
+requires:
+  auth: true
+
+patch:
+  auth:
+    organization:
+      enabled: true
+      roles: [owner, admin, member]
+
+  models:
+    Project:
+      fields:
+        name: string required
+        description: text
+        org: Organization
+      timestamps: true
+      scoped: true
+      policies:
+        list: authenticated
+        create: authenticated
+        update: owner
+        delete: admin

@@ -26,18 +26,21 @@ const cmd = args[0]
 
 if (cmd === "new") {
   const name = args[1]
-  if (!name) { console.error("zorux new <name> [--api | --web | --mobile | --fullstack]"); process.exit(1) }
+  if (!name) { console.error("zorux new <name> [--preset <preset>] [--api | --web | --saas] [--ui <theme>]"); process.exit(1) }
+  const presetIdx = args.indexOf("--preset")
   const uiIdx = args.indexOf("--ui")
   const opts = {
+    preset: presetIdx >= 0 && args.length > presetIdx + 1 ? args[presetIdx + 1] : undefined,
     api: args.includes("--api"),
     web: args.includes("--web"),
     mobile: args.includes("--mobile"),
     fullstack: args.includes("--fullstack"),
     saas: args.includes("--saas"),
     all: args.includes("--all"),
+    minimal: args.includes("--minimal"),
     ui: uiIdx >= 0 && args.length > uiIdx + 1 ? args[uiIdx + 1] : "default",
   }
-  if (!opts.api && !opts.web && !opts.mobile && !opts.fullstack && !opts.saas && !opts.all) opts.web = true
+  if (!opts.preset && !opts.api && !opts.web && !opts.mobile && !opts.fullstack && !opts.saas && !opts.all) opts.web = true
   await newCommand(name, opts)
 } else if (cmd === "dev") {
   devCommand({ port: args[1] || "3000" })
@@ -82,32 +85,47 @@ if (cmd === "new") {
   await pluginCommand(args)
 } else if (cmd === "runner") {
   await runnerCommand(args)
+} else if (cmd === "recipe") {
+  const { recipeCommand } = await import("./recipe")
+  await recipeCommand(args)
+} else if (cmd === "inspect") {
+  const { inspectCommand } = await import("./inspect")
+  await inspectCommand(args)
+} else if (cmd === "explain") {
+  const { explainCommand } = await import("./explain")
+  await explainCommand(args)
+} else if (cmd === "verify") {
+  const { verifyCommand } = await import("./verify")
+  await verifyCommand(args)
 } else {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
   console.log("Usage:")
-  console.log("  zorux new <name> [--api | --web | --mobile | --fullstack | --saas | --all] [--ui <framework>]")
+  console.log("  zorux new <name> [--preset api|web|saas|blog] [--minimal] [--ui <theme>]")
   console.log("  zorux dev [port]")
-  console.log("  zorux gen mobile")
-  console.log("  zorux gen desktop")
-  console.log("  zorux gen pwa")
-  console.log("  zorux gen graphql")
+  console.log("  zorux recipe add <name>")
+  console.log("  zorux gen mobile|desktop|pwa|graphql")
+  console.log("  zorux inspect [--json]")
+  console.log("  zorux explain [app.yaml]")
+  console.log("  zorux verify [promise]")
   console.log("  zorux add model <Name> <field>:<type> [flags...]")
-  console.log("  zorux make action <name> <handler> [...]")
-  console.log("  zorux make job <name>")
-  console.log("  zorux make migration <name>")
-  console.log("  zorux seed [--count N] [Model:N ...]")
+  console.log("  zorux make action|job|migration <name>")
+  console.log("  zorux seed [--count N]")
   console.log("  zorux deploy")
   console.log("  zorux test [--run] [--e2e] [--security]")
-  console.log("  zorux db reset|migrate [--auto]|rollback|status|schema dump")
+  console.log("  zorux db reset|migrate|rollback|status")
   console.log("  zorux audit")
   console.log("  zorux info")
   console.log("  zorux docs [topic]")
-  console.log("  zorux completion [bash|zsh|fish]")
   console.log("  zorux scaffold forum|blog|ecommerce|saas [name]")
   console.log("  zorux console")
   console.log("  zorux runner <script>")
   console.log("  zorux plugin list|add|remove")
-  console.log("  zorux credentials {setup|edit|show}")
+  console.log("  zorux credentials setup|edit|show")
   console.log("  zorux version")
+  console.log("")
+  console.log("Recipes:")
+  console.log("  zorux recipe add blog       Add blog (Post, Category, Comment)")
+  console.log("  zorux recipe add teams      Add organization teams")
+  console.log("  zorux recipe add billing    Add Stripe subscriptions")
 }

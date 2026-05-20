@@ -1,0 +1,68 @@
+# preset: saas
+# Full SaaS: API + Admin + Auth + Payments + Teams + Landing
+features:
+  auth: true
+  admin: true
+  realtime: true
+  jobs: true
+  billing: stripe
+  teams: true
+
+auth:
+  model: User
+  registration: open
+  roles: [admin, viewer]
+  organization:
+    enabled: true
+    roles: [owner, admin, member]
+
+models:
+  User:
+    fields:
+      name: string required
+      email: string unique
+    auth: password
+    policies:
+      list: admin
+      read: authenticated
+      update: owner
+
+  Project:
+    fields:
+      name: string required
+      description: text
+      org: Organization
+    timestamps: true
+    scoped: true
+    policies:
+      list: authenticated
+      create: authenticated
+      update: owner
+      delete: admin
+
+  Subscription:
+    fields:
+      plan: string enum:free,pro,enterprise
+      status: string enum:active,canceled,past_due
+      stripeCustomerId: string
+      stripeSubscriptionId: string
+      org: Organization
+    timestamps: true
+    scoped: true
+    policies:
+      list: admin
+      read: authenticated
+      update: admin
+      delete: admin
+
+database:
+  provider: sqlite
+
+cache:
+  provider: memory
+
+email:
+  provider: sandbox
+
+realtime:
+  enabled: true

@@ -1,95 +1,84 @@
-import { mkdirSync, writeFileSync, existsSync } from 'fs'
+import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { load, dump } from 'js-yaml'
 
-export async function newCommand(name: string, options: { api?: boolean; web?: boolean; mobile?: boolean; fullstack?: boolean; saas?: boolean; all?: boolean; ui?: string }) {
+interface NewOptions {
+  preset?: string
+  api?: boolean
+  web?: boolean
+  mobile?: boolean
+  fullstack?: boolean
+  saas?: boolean
+  all?: boolean
+  ui?: string
+  minimal?: boolean
+}
+
+export async function newCommand(name: string, options: NewOptions) {
   const projectDir = join(process.cwd(), name)
-
   if (existsSync(projectDir)) {
     console.error('[Zorux] Directory ' + name + ' already exists')
     process.exit(1)
   }
 
-  const isSaaS = options.saas || options.all
-  const mode = options.all ? 'fullstack' : (isSaaS ? 'fullstack' : (options.fullstack ? 'fullstack' : (options.mobile ? 'mobile' : (options.web ? 'web' : 'api'))))
+  const preset = resolvePreset(options)
+  console.log('\n  ⚡ Creating ' + preset + ' project: ' + name + '\n')
 
-  console.log('\n  \u26a1 Creating ' + (isSaaS ? 'SaaS ' : '') + mode + ' project: ' + name + '\n')
+  // Load preset YAML
+  const presetDir = join(import.meta.dir, '../../presets')
+  const presetPath = join(presetDir, preset + '.yaml')
+  const presetYaml = existsSync(presetPath)
+    ? (load(readFileSync(presetPath, 'utf-8')) as any)
+    : { features: {}, models: {} }
 
+  // Create directories
   mkdirSync(join(projectDir, 'actions'), { recursive: true })
   mkdirSync(join(projectDir, 'public'), { recursive: true })
   mkdirSync(join(projectDir, 'jobs'), { recursive: true })
 
-  if (mode === 'web' || mode === 'fullstack') {
+  const hasFrontend = preset !== 'api'
+  if (hasFrontend) {
     mkdirSync(join(projectDir, 'web', 'pages'), { recursive: true })
     mkdirSync(join(projectDir, 'web', 'components'), { recursive: true })
+    mkdirSync(join(projectDir, 'web', 'styles'), { recursive: true })
   }
 
-  writeFileSync(join(projectDir, 'app.yaml'), isSaaS ? generateSaaSYaml(name) : generateAppYaml(name, mode))
+  // Generate app.yaml
+  writeFileSync(join(projectDir, 'app.yaml'), generateAppYaml(name, preset, presetYaml))
 
-  const pkg: any = {
-    name,
-    type: 'module',
-    scripts: { dev: 'zorux dev', build: 'zorux build' },
-    dependencies: {
-      zorux: 'latest',
-      'drizzle-orm': '^0.33.0',
-      hono: '^4.5.0',
-      zod: '^3.23.0',
-    },
-    devDependencies: { 'bun-types': 'latest', typescript: '^5.5.0' },
-  }
+  // Generate package.json
+  writeFileSync(join(projectDir, 'package.json'), JSON.stringify(generatePkg(name, options), null, 2))
 
-  // Add UI framework dependencies if specified
-  if (options.ui && options.ui !== "default") {
-    try {
-      const { getUIDependencies } = await import("../core/theme")
-      const deps = getUIDependencies(options.ui)
-      for (const dep of deps) {
-        pkg.dependencies[dep] = "*"
-      }
-      pkg.scripts["dev"] = "zorux dev"
-      pkg.scripts["build"] = "zorux build"
-    } catch {}
-  }
-  writeFileSync(join(projectDir, 'package.json'), JSON.stringify(pkg, null, 2))
-
-  const tsconfig = {
+  // tsconfig
+  writeFileSync(join(projectDir, 'tsconfig.json'), JSON.stringify({
     compilerOptions: {
-      target: 'ESNext',
-      module: 'ESNext',
-      moduleResolution: 'bundler',
-      strict: true,
-      jsx: 'react-jsx',
-      jsxImportSource: 'hono/jsx',
+      target: 'ESNext', module: 'ESNext', moduleResolution: 'bundler',
+      strict: true, jsx: 'react-jsx', jsxImportSource: 'hono/jsx',
       types: ['bun-types'],
     },
     include: ['**/*.ts', '**/*.tsx'],
-  }
-  writeFileSync(join(projectDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2))
+  }, null, 2))
 
-  // SaaS extras
-  if (isSaaS) {
+  // .env
+  const env = [
+    '# Zorux - Environment',
+    'PORT=3000',
+    'JWT_SECRET=change-this-to-a-random-secret',
+    '',
+  ].join('\n')
+  writeFileSync(join(projectDir, '.env'), env)
+  writeFileSync(join(projectDir, '.env.example'), env)
+
+  // Generate web pages
+  if (hasFrontend && !options.minimal) {
+    generateWebPages(projectDir, name, preset)
+  }
+
+  // Generate actions
+  if (preset === 'saas') {
     generateSaaSExtras(projectDir, name)
   } else {
     writeFileSync(join(projectDir, 'actions', '.gitkeep'), '')
-  }
-
-  if (!isSaaS) {
-    const envExample = [
-      '# Zorux - Environment Variables',
-      '# Copy this file to .env and fill in your values',
-      '',
-      'PORT=3000',
-      'JWT_SECRET=change-this-to-a-random-secret',
-      '# DATABASE_URL=sqlite://data.db',
-      '# For PostgreSQL:',
-      '# DATABASE_URL=postgres://user:pass@localhost:5432/mydb',
-      '# For Supabase:',
-      '# SUPABASE_URL=https://xyz.supabase.co',
-      '# SUPABASE_ANON_KEY=your-anon-key',
-      '# SUPABASE_SERVICE_KEY=your-service-role-key',
-    ].join('\n')
-    writeFileSync(join(projectDir, '.env.example'), envExample)
-    writeFileSync(join(projectDir, '.env'), envExample.replace('# Copy this file to .env and fill in your values', 'Generated by Zorux. Edit as needed.'))
   }
 
   // Generate mobile for --all
@@ -100,186 +89,204 @@ export async function newCommand(name: string, options: { api?: boolean; web?: b
       genMobileCommand(projectDir)
     } catch (err: any) {
       console.log("  - Mobile generation error:", err.message)
-      console.log("zorux gen mobile' later")
     }
   }
 
-  console.log('  \u2705 Created ' + name + ' at ' + projectDir)
+  console.log('  ✅ Created ' + name + ' at ' + projectDir)
   console.log('\n  Next steps:')
   console.log('    cd ' + name)
+  console.log('    bun install')
   console.log('    zorux dev\n')
 }
 
-function generateAppYaml(name: string, mode: string): string {
-  return '# ' + name + ' - Zorux ' + mode + ' app\n' +
-'name: ' + name + '\n' +
-'type: ' + mode + '\n' +
-'provider: Zorux\n\n' +
-'database:\n' +
-'  provider: sqlite\n\n' +
-'models:\n' +
-'  # Add your models here\n' +
-'  # Example:\n' +
-'  # User:\n' +
-'  #   fields:\n' +
-'  #     name: string required\n' +
-'  #     email: email unique\n' +
-'  #   auth: password\n'
+function resolvePreset(opts: NewOptions): string {
+  if (opts.preset) return opts.preset
+  if (opts.all || opts.saas) return 'saas'
+  if (opts.fullstack) return 'web'
+  if (opts.web) return 'web'
+  if (opts.mobile) return 'web'
+  return 'api'
 }
 
-function generateSaaSYaml(name: string): string {
-  return `# ${name} - SaaS app powered by Zorux
+function generatePkg(name: string, options: NewOptions): any {
+  const pkg: any = {
+    name,
+    type: 'module',
+    scripts: { dev: 'zorux dev', build: 'zorux build', test: 'bun test' },
+    dependencies: { zorux: 'latest', hono: '^4.5.0' },
+    devDependencies: { 'bun-types': 'latest', typescript: '^5.5.0' },
+  }
+  if (options.ui && options.ui !== "default") {
+    try {
+      const deps = getUIDeps(options.ui)
+      for (const dep of deps) pkg.dependencies[dep] = "*"
+    } catch {}
+  }
+  return pkg
+}
+
+function getUIDeps(ui: string): string[] {
+  const map: Record<string, string[]> = {
+    tailwind: ['tailwindcss', '@tailwindcss/cli', 'daisyui'],
+    daisyui: ['tailwindcss', '@tailwindcss/cli', 'daisyui'],
+    antd: ['antd'],
+    mui: ['@mui/material', '@emotion/react', '@emotion/styled'],
+  }
+  return map[ui] || []
+}
+
+function generateAppYaml(name: string, preset: string, presetYaml: any): string {
+  const type = preset === 'api' ? 'api' : 'fullstack'
+  let yaml = `# ${name} - Zorux ${preset} app
 name: ${name}
-type: fullstack
-provider: Zorux
+type: ${type}
 
 database:
   provider: sqlite
 
-auth:
-  model: User
-  registration: open
-  roles: [admin, viewer]
-  defaultRole: viewer
-  organization:
-    enabled: true
-    roles: [owner, admin, member]
-    inviteExpiresIn: 7
-
-models:
-  User:
-    fields:
-      name: string required min:2
-      email: string unique
-    auth: password
-    policies:
-      list: admin
-      read: authenticated
-      update: owner
-      delete: admin
-
-  Project:
-    fields:
-      name: string required
-      description: text
-      org: Organization
-    timestamps: true
-    scoped: true
-    policies:
-      list: authenticated
-      create: authenticated
-      update: owner
-      delete: admin
-
-  Subscription:
-    fields:
-      plan: string enum:free,pro,enterprise
-      status: string enum:active,canceled,past_due
-      stripeCustomerId: string
-      stripeSubscriptionId: string
-      org: Organization
-    timestamps: true
-    scoped: true
-    policies:
-      list: admin
-      read: authenticated
-      update: admin
-      delete: admin
 `
+
+  // Auth
+  if (presetYaml.features?.auth) {
+    const auth = presetYaml.auth || { model: 'User', registration: 'open' }
+    yaml += `auth:
+  model: ${auth.model || 'User'}
+  registration: ${auth.registration || 'open'}
+  roles: [${(auth.roles || ['admin', 'member']).join(', ')}]
+`
+    if (auth.organization?.enabled) {
+      yaml += `  organization:
+    enabled: true
+    roles: [${(auth.organization.roles || ['owner', 'admin', 'member']).join(', ')}]
+`
+    }
+    yaml += '\n'
+  }
+
+  // Models
+  const models = presetYaml.models || {}
+  const modelKeys = Object.keys(models)
+  if (modelKeys.length > 0) {
+    yaml += 'models:\n'
+    for (const [mname, mdef] of Object.entries(models)) {
+      const def = mdef as any
+      yaml += `  ${mname}:\n`
+      if (def.fields) {
+        yaml += '    fields:\n'
+        for (const [fname, ftype] of Object.entries(def.fields)) {
+          yaml += `      ${fname}: ${ftype}\n`
+        }
+      }
+      if (def.auth) yaml += `    auth: ${def.auth}\n`
+      if (def.timestamps) yaml += `    timestamps: true\n`
+      if (def.scoped) yaml += `    scoped: true\n`
+      if (def.policies) {
+        yaml += '    policies:\n'
+        for (const [action, policy] of Object.entries(def.policies)) {
+          yaml += `      ${action}: ${policy}\n`
+        }
+      }
+    }
+  } else if (preset === 'api') {
+    yaml += `models:
+  # Add your models here
+  # Example:
+  # User:
+  #   fields:
+  #     name: string required
+  #     email: email unique
+  #   auth: password
+`
+  }
+
+  // Add optional feature blocks
+  if (presetYaml.cache?.provider) yaml += `\ncache:\n  provider: ${presetYaml.cache.provider}\n`
+  if (presetYaml.email?.provider) yaml += `\nemail:\n  provider: ${presetYaml.email.provider}\n  from: "noreply@${name}.com"\n`
+  if (presetYaml.realtime?.enabled) yaml += `\nrealtime:\n  enabled: true\n`
+
+  return yaml
+}
+
+function generateWebPages(projectDir: string, name: string, preset: string) {
+  // Landing page (DaisyUI)
+  writeFileSync(join(projectDir, 'web', 'pages', 'index.tsx'), `import type { FC } from "hono/jsx"
+
+export const HomePage: FC<{ appName: string }> = ({ appName }) => (
+  <div class="min-h-screen bg-base-200">
+    <nav class="navbar bg-base-100/80 backdrop-blur border-b border-base-200 sticky top-0 z-20 px-6">
+      <div class="flex-1 font-bold text-lg tracking-tight">{appName}</div>
+      <div class="flex gap-2">
+        <a href="/login" class="btn btn-soft btn-sm">Sign in</a>
+        <a href="/register" class="btn btn-primary btn-sm">Get started</a>
+      </div>
+    </nav>
+    <main>
+      <section class="hero bg-base-100 py-24 px-6">
+        <div class="hero-content text-center max-w-2xl mx-auto">
+          <div>
+            <div class="badge badge-soft badge-primary mb-4">Built with Zorux</div>
+            <h1 class="text-5xl font-bold tracking-tight">{appName}</h1>
+            <p class="text-lg opacity-60 mt-4 max-w-lg mx-auto">Full-stack SaaS powered by Zorux. One YAML file generates API, admin, auth, payments, and teams.</p>
+            <a href="/register" class="btn btn-primary btn-lg mt-6">Get started →</a>
+          </div>
+        </div>
+      </section>
+      <section class="py-16 px-6 max-w-5xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="card card-border bg-base-100">
+            <div class="card-body">
+              <h3 class="card-title">Team Management</h3>
+              <p class="text-sm opacity-60">Invite members, assign roles, manage permissions across organizations.</p>
+            </div>
+          </div>
+          <div class="card card-border bg-base-100">
+            <div class="card-body">
+              <h3 class="card-title">Subscriptions</h3>
+              <p class="text-sm opacity-60">Stripe integration with plans, billing, and customer portal.</p>
+            </div>
+          </div>
+          <div class="card card-border bg-base-100">
+            <div class="card-body">
+              <h3 class="card-title">API First</h3>
+              <p class="text-sm opacity-60">REST API with Swagger docs, auto-generated from your models.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <footer class="text-center py-8 text-sm opacity-40 border-t border-base-200">
+        <p>&copy; ${new Date().getFullYear()} {appName}. Built with Zorux.</p>
+      </footer>
+    </main>
+  </div>
+)
+`)
 }
 
 function generateSaaSExtras(projectDir: string, name: string) {
-  // -- Seed data file --
-  writeFileSync(join(projectDir, "seed.ts"), `import { F } from "zorux"
+  writeFileSync(join(projectDir, 'seed.ts'), `import { F } from "zorux"
 
 export default async function seed() {
-  // Create plans
-  const plans = [
-    { name: "Free", price: 0, features: "1 project, 3 members" },
-    { name: "Pro", price: 29, features: "Unlimited projects, 10 members" },
-    { name: "Enterprise", price: 99, features: "Everything, priority support" },
-  ]
-
   console.log("  Seed data created!")
 }
 `)
 
-  // -- Example action --
-  writeFileSync(join(projectDir, "actions", "billing.ts"), `import { F } from "zorux"
+  writeFileSync(join(projectDir, 'actions', 'billing.ts'), `import { F } from "zorux"
 
 export const invoicePaid = {
   policy: "*",
   handler: async (c: any) => {
     const { email, amount } = await c.req.json()
-    // Send email via your provider
     console.log(\`Invoice \${amount} paid by \${email}\`)
     return c.json({ success: true })
   },
 }
 `)
 
-  // -- Example job --
-  writeFileSync(join(projectDir, "jobs", "subscriptions.ts"), `export default {
+  writeFileSync(join(projectDir, 'jobs', 'subscriptions.ts'), `export default {
   name: "check-expired-subscriptions",
   async perform(_args: any) {
     console.log("Checking for expired subscriptions...")
-    // Check and update expired subscriptions
   },
 }
 `)
-
-  // -- Landing page --
-  writeFileSync(join(projectDir, "web", "pages", "landing.tsx"), `import type { FC } from "hono/jsx"
-
-export const LandingPage: FC<{ appName: string }> = ({ appName }) => (
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>{appName}</title>
-      <style>{":root{--primary:#3b82f6;--bg:#fff;--text:#111}body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:0;background:var(--bg);color:var(--text)}.hero{text-align:center;padding:6rem 2rem 4rem}.hero h1{font-size:3rem;margin:0}.hero p{font-size:1.2rem;color:#666;margin:1rem 0 2rem}.btn{display:inline-block;padding:0.75rem 2rem;background:var(--primary);color:#fff;text-decoration:none;border-radius:6px;font-weight:600}.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;padding:2rem;max-width:1000px;margin:0 auto}.feature{padding:1.5rem;border:1px solid #eee;border-radius:8px}.feature h3{margin:0 0 0.5rem}.footer{text-align:center;padding:2rem;color:#999;font-size:0.9rem}"}</style>
-    </head>
-    <body>
-      <div class="hero">
-        <h1>{appName}</h1>
-        <p>Built with Zorux Framework � full-stack, auth, payments, teams.</p>
-        <a href="/login" class="btn">Get Started</a>
-      </div>
-      <div class="features">
-        <div class="feature"><h3>Team Management</h3><p>Invite members, assign roles, manage permissions.</p></div>
-        <div class="feature"><h3>Subscriptions</h3><p>Stripe/Polar integration with plans and billing.</p></div>
-        <div class="feature"><h3>API Keys</h3><p>Generate and manage API keys for integrations.</p></div>
-      </div>
-      <div class="footer">&copy; {new Date().getFullYear()} {appName}</div>
-    </body>
-  </html>
-)
-`)
-
-  // -- Enhanced .env for SaaS --
-  const envSaas = [
-    "# Zorux - SaaS Environment",
-    "",
-    "PORT=3000",
-    "JWT_SECRET=change-this-to-a-random-secret-please",
-    "BASE_URL=http://localhost:3000",
-    "APP_NAME=" + name,
-    "EMAIL_PROVIDER=fake",
-    "EMAIL_FROM=noreply@" + name.toLowerCase().replace(/\s+/g, "") + ".com",
-    "",
-    "# Stripe (optional)",
-    "# STRIPE_SECRET_KEY=sk_live_...",
-    "# STRIPE_WEBHOOK_SECRET=whsec_...",
-    "",
-    "# PostgreSQL (optional, default: SQLite)",
-    "# DATABASE_URL=postgres://user:pass@localhost:5432/" + name,
-  ].join("\n")
-  writeFileSync(join(projectDir, ".env"), envSaas)
-  writeFileSync(join(projectDir, ".env.example"), envSaas)
-
-  console.log("  - Created SaaS template files")
-  console.log("  - Created web/pages/landing.tsx (landing page)")
-  console.log("  - Created actions/billing.ts (example action)")
-  console.log("  - Created jobs/subscriptions.ts (example job)")
-  console.log("  - Created seed.ts (data seeding)")
 }

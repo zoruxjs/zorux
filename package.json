@@ -4,7 +4,7 @@
   "type": "module",
   "description": "AI-first web framework: API, Web, Mobile — minimal tokens, maximum output",
   "bin": {
-    "zorux": "./dist/index.js"
+    "zorux": "dist/index.js"
   },
   "main": "./dist/core/index.js",
   "exports": {

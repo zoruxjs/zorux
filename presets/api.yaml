@@ -1,0 +1,18 @@
+# preset: api-only
+# Minimal REST API with Swagger, no admin, no auth by default
+features:
+  auth: false
+  admin: false
+  graphql: true
+  webhooks: true
+  jobs: true
+
+models:
+  User:
+    fields:
+      name: string required
+      email: string unique
+    timestamps: true
+
+database:
+  provider: sqlite
