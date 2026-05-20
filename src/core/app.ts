@@ -52,7 +52,7 @@ export async function createApp(rootDir: string): Promise<AppInstance> {
   const actionsDir = join(rootDir, "actions")
   const actions = await loadActions(actionsDir)
   // Create app
-  const app = createRouter(platform, actions)
+  const app = createRouter(platform, actions, rootDir)
 
   // Verify org middleware works with a test route
   if ((config as any).auth?.organization?.enabled) {

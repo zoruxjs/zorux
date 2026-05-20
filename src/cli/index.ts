@@ -109,6 +109,15 @@ if (cmd === "new") {
 } else if (cmd === "map") {
   const { mapCommand } = await import("./map")
   await mapCommand(args)
+} else if (cmd === "diff") {
+  const { diffCommand } = await import("./diff")
+  await diffCommand(args)
+} else if (cmd === "decisions") {
+  const { decisionsCommand } = await import("./decisions")
+  await decisionsCommand(args)
+} else if (cmd === "ownership") {
+  const { ownershipCommand } = await import("./ownership")
+  await ownershipCommand(args)
 } else {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
@@ -123,6 +132,9 @@ if (cmd === "new") {
   console.log("  zorux context [--budget N] [--output <path>]")
   console.log("  zorux routes")
   console.log("  zorux map")
+  console.log("  zorux diff")
+  console.log("  zorux decisions")
+  console.log("  zorux ownership <model|/route|field>")
   console.log("  zorux add model <Name> <field>:<type> [flags...]")
   console.log("  zorux make action|job|migration <name>")
   console.log("  zorux seed [--count N]")

@@ -10,6 +10,11 @@ import { fireWebhookEvent } from "./webhooks"
 import { indexModelRecord, removeModelIndex, getSearchProvider } from "./search"
 import { logAudit } from "./audit"
 import { emit } from "./events"
+import { runHook } from "./hooks"
+
+function getHooks(model: any): Record<string, string | undefined> {
+  return model.hooks || {}
+}
 
 async function checkPolicy(c: any, policy: string | undefined, auth: any, authModel: any, model?: any, resource?: any): Promise<true | Response> {
   const p = policy || (authModel ? "authenticated" : "*")
@@ -106,7 +111,7 @@ interface ActionHandler {
   handler: (c: any) => any | Promise<any>
 }
 
-export function createRouter(platform: PlatformAdapter, actions?: Record<string, Record<string, ActionHandler>>): Hono {
+export function createRouter(platform: PlatformAdapter, actions?: Record<string, Record<string, ActionHandler>>, rootDir?: string): Hono {
   const app = new Hono()
   const { config, models, database, auth, realtime } = platform
   const authModel = models.find(m => m.hasAuth)
@@ -462,6 +467,12 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
         const body = await parseMultipart(c)
         if (authModel) delete body.password
 
+        // Hook: beforeCreate
+        const h = getHooks(model)
+        if (rootDir && h.beforeCreate) {
+          try { await runHook(rootDir, h.beforeCreate, { c, body, model }) } catch (e: any) { return c.json({ error: e.message }, 400) }
+        }
+
         // UUID v7: auto-generate id if not provided
         if (model.idType === "uuid" && !body.id) {
           const { uuidv7 } = await import("./uuid")
@@ -493,6 +504,10 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
           if (sp) indexModelRecord(sp, model, created).catch(() => {})
           const au = c.get("user")
           try { logAudit(database as any, au?.id, au?.name || au?.email, model.tableName, created.id, "create", undefined, created, c.req.header("x-forwarded-for")) } catch {}
+          // Hook: afterCreate
+          if (rootDir && h.afterCreate) {
+            runHook(rootDir, h.afterCreate, { c, body, created, model }).catch(() => {})
+          }
         }
         return c.json(created || body, 201)
       } catch (err: any) {
@@ -518,6 +533,13 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
         const po = await checkOwner(c, policies.update || defaultPol, existing, model)
         if (po !== true) return po
         const body = await parseMultipart(c)
+
+        // Hook: beforeUpdate
+        const h2 = getHooks(model)
+        if (rootDir && h2.beforeUpdate) {
+          try { await runHook(rootDir, h2.beforeUpdate, { c, id, body, existing, model }) } catch (e: any) { return c.json({ error: e.message }, 400) }
+        }
+
         const errs = validateFields(model.fields, body)
         if (errs.length > 0) return c.json({ error: "Validation failed", errors: errs }, 400)
         await col.update(id, body)
@@ -530,6 +552,10 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
           if (sp) indexModelRecord(sp, model, updated).catch(() => {})
           const au = c.get("user")
           try { logAudit(database as any, au?.id, au?.name || au?.email, model.tableName, id, "update", existing, updated, c.req.header("x-forwarded-for")) } catch {}
+          // Hook: afterUpdate
+          if (rootDir && h2.afterUpdate) {
+            runHook(rootDir, h2.afterUpdate, { c, id, body, existing, updated, model }).catch(() => {})
+          }
         }
         return c.json(updated || null)
       } catch (err: any) {
@@ -582,6 +608,12 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
         const po = await checkOwner(c, policies.delete || defaultPol, existing, model)
         if (po !== true) return po
 
+        // Hook: beforeDelete
+        const h3 = getHooks(model)
+        if (rootDir && h3.beforeDelete) {
+          try { await runHook(rootDir, h3.beforeDelete, { c, id: existing.id, existing, model }) } catch (e: any) { return c.json({ error: e.message }, 400) }
+        }
+
         const au = c.get("user")
         if (model.softDelete) {
           await col.update(id, { deleted_at: new Date().toISOString() })
@@ -601,6 +633,10 @@ export function createRouter(platform: PlatformAdapter, actions?: Record<string,
         const sp = getSearchProvider()
         if (sp) removeModelIndex(sp, model, parseInt(id)).catch(() => {})
         try { logAudit(database as any, au?.id, au?.name || au?.email, model.tableName, id, "delete", existing, undefined, c.req.header("x-forwarded-for")) } catch {}
+        // Hook: afterDelete
+        if (rootDir && h3.afterDelete) {
+          runHook(rootDir, h3.afterDelete, { c, id: existing.id, existing, model }).catch(() => {})
+        }
         return c.json({ success: true })
       } catch (err: any) {
         return c.json({ error: err.message }, 500)
