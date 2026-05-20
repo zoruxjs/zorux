@@ -25,7 +25,10 @@ export async function newCommand(name: string, options: NewOptions) {
   console.log('\n  ⚡ Creating ' + preset + ' project: ' + name + '\n')
 
   // Load preset YAML
-  const presetDir = join(import.meta.dir, '../../presets')
+  const dir = import.meta.dir
+  const presetDir = existsSync(join(dir, '../../presets'))
+    ? join(dir, '../../presets')
+    : join(dir, '../presets')  // bundled: dist/ → presets/
   const presetPath = join(presetDir, preset + '.yaml')
   const presetYaml = existsSync(presetPath)
     ? (load(readFileSync(presetPath, 'utf-8')) as any)

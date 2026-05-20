@@ -1,0 +1,7 @@
+# test-e2e - Zorux saas app
+name: test-e2e
+type: fullstack
+
+database:
+  provider: sqlite
+

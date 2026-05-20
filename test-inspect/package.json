@@ -1,0 +1,17 @@
+{
+  "name": "test-inspect",
+  "type": "module",
+  "scripts": {
+    "dev": "zorux dev",
+    "build": "zorux build",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "zorux": "latest",
+    "hono": "^4.5.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "^5.5.0"
+  }
+}

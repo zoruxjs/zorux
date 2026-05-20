@@ -97,6 +97,18 @@ if (cmd === "new") {
 } else if (cmd === "verify") {
   const { verifyCommand } = await import("./verify")
   await verifyCommand(args)
+} else if (cmd === "doctor") {
+  const { doctorCommand } = await import("./doctor")
+  await doctorCommand(args)
+} else if (cmd === "context") {
+  const { contextCommand } = await import("./context")
+  await contextCommand(args)
+} else if (cmd === "routes") {
+  const { routesCommand } = await import("./routes")
+  await routesCommand(args)
+} else if (cmd === "map") {
+  const { mapCommand } = await import("./map")
+  await mapCommand(args)
 } else {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
@@ -104,10 +116,13 @@ if (cmd === "new") {
   console.log("  zorux new <name> [--preset api|web|saas|blog] [--minimal] [--ui <theme>]")
   console.log("  zorux dev [port]")
   console.log("  zorux recipe add <name>")
-  console.log("  zorux gen mobile|desktop|pwa|graphql")
   console.log("  zorux inspect [--json]")
   console.log("  zorux explain [app.yaml]")
-  console.log("  zorux verify [promise]")
+  console.log("  zorux verify")
+  console.log("  zorux doctor [--verbose]")
+  console.log("  zorux context [--budget N] [--output <path>]")
+  console.log("  zorux routes")
+  console.log("  zorux map")
   console.log("  zorux add model <Name> <field>:<type> [flags...]")
   console.log("  zorux make action|job|migration <name>")
   console.log("  zorux seed [--count N]")
@@ -123,6 +138,11 @@ if (cmd === "new") {
   console.log("  zorux plugin list|add|remove")
   console.log("  zorux credentials setup|edit|show")
   console.log("  zorux version")
+  console.log("")
+  console.log("Feature maturity:")
+  console.log("  ✅ Stable: API, CRUD, SQLite, Admin, Auth, OpenAPI, Cache")
+  console.log("  🧪 Beta:   GraphQL, Webhooks, Jobs, Plugins, Feature Flags")
+  console.log("  🔬 Experimental: Mobile (Expo), Desktop (Tauri), Payments, Multiple DB providers")
   console.log("")
   console.log("Recipes:")
   console.log("  zorux recipe add blog       Add blog (Post, Category, Comment)")

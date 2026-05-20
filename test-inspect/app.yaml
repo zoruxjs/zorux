@@ -1,0 +1,7 @@
+# test-inspect - Zorux saas app
+name: test-inspect
+type: fullstack
+
+database:
+  provider: sqlite
+
