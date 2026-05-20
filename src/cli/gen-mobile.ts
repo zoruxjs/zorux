@@ -16,7 +16,10 @@ export function genMobileCommand(rootDir: string) {
   console.log("Generating mobile app from " + config.name + "...")
 
   // Copy template files
-  const templateDir = join(import.meta.dir, "mobile-templates")
+  const _dir = import.meta.dir
+  const templateDir = existsSync(join(_dir, "mobile-templates"))
+    ? join(_dir, "mobile-templates")
+    : join(_dir, "../src/cli/mobile-templates")
   copyTemplate(templateDir, mobileDir)
 
   if (config.realtime?.enabled) {
@@ -28,11 +31,12 @@ export function genMobileCommand(rootDir: string) {
   }
 
   // Generate per-model screens
+  const tplDir = templateDir
   for (const model of models) {
-    genModelList(mobileDir, model)
-    genModelDetail(mobileDir, model)
-    genModelNew(mobileDir, model, config)
-    genModelEdit(mobileDir, model)
+    genModelList(mobileDir, model, tplDir)
+    genModelDetail(mobileDir, model, tplDir)
+    genModelNew(mobileDir, model, config, tplDir)
+    genModelEdit(mobileDir, model, tplDir)
     genModelApi(mobileDir, model)
   }
 
@@ -57,8 +61,9 @@ function copyTemplate(src: string, dest: string) {
   copyRec(src, dest)
 }
 
-function genModelList(mobileDir: string, model: any) {
-  let content = readFileSync(join(import.meta.dir, "mobile-templates", "MODEL_LIST.tsx"), "utf-8")
+function genModelList(mobileDir: string, model: any, tplDir?: string) {
+  const base = tplDir || join(import.meta.dir, "mobile-templates")
+  let content = readFileSync(join(base, "MODEL_LIST.tsx"), "utf-8")
   content = content.replace(/\/\/MODEL\/\//g, model.tableName)
   content = content.replace(/\/\/MODEL_NAME\/\//g, model.name)
   const dir = join(mobileDir, "app", "(tabs)", model.tableName)
@@ -66,8 +71,9 @@ function genModelList(mobileDir: string, model: any) {
   writeFileSync(join(dir, "index.tsx"), content)
 }
 
-function genModelDetail(mobileDir: string, model: any) {
-  let content = readFileSync(join(import.meta.dir, "mobile-templates", "MODEL_DETAIL.tsx"), "utf-8")
+function genModelDetail(mobileDir: string, model: any, tplDir?: string) {
+  const base = tplDir || join(import.meta.dir, "mobile-templates")
+  let content = readFileSync(join(base, "MODEL_DETAIL.tsx"), "utf-8")
   content = content.replace(/\/\/MODEL\/\//g, model.tableName)
   content = content.replace(/\/\/MODEL_NAME\/\//g, model.name)
   const dir = join(mobileDir, "app", "(tabs)", model.tableName)
@@ -75,8 +81,9 @@ function genModelDetail(mobileDir: string, model: any) {
   writeFileSync(join(dir, "[id].tsx"), content)
 }
 
-function genModelNew(mobileDir: string, model: any, _config: any) {
-  let content = readFileSync(join(import.meta.dir, "mobile-templates", "MODEL_NEW.tsx"), "utf-8")
+function genModelNew(mobileDir: string, model: any, _config: any, tplDir?: string) {
+  const base = tplDir || join(import.meta.dir, "mobile-templates")
+  let content = readFileSync(join(base, "MODEL_NEW.tsx"), "utf-8")
   content = content.replace(/\/\/MODEL\/\//g, model.tableName)
   content = content.replace(/\/\/MODEL_NAME\/\//g, model.name)
 
@@ -141,10 +148,11 @@ function genModelNew(mobileDir: string, model: any, _config: any) {
   writeFileSync(join(dir, "new.tsx"), content)
 }
 
-function genModelEdit(mobileDir: string, model: any) {
+function genModelEdit(mobileDir: string, model: any, tplDir?: string) {
   let content: string
   try {
-    content = readFileSync(join(import.meta.dir, "mobile-templates", "MODEL_EDIT.tsx"), "utf-8")
+    const base = tplDir || join(import.meta.dir, "mobile-templates")
+    content = readFileSync(join(base, "MODEL_EDIT.tsx"), "utf-8")
   } catch {
     return // Template doesn't exist
   }
