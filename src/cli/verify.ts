@@ -90,6 +90,55 @@ export async function verifyCommand(args: string[]) {
         checks.push({ ok: false, msg: `${name}.${action} is public ("*") with no auth — verify this is intended` })
       }
     }
+    // Semantic: auth model should have password or email field
+    if (name === config.auth?.model && def.auth === "password") {
+      const fields = def.fields || {}
+      const hasPassword = Object.keys(fields).some(k => String(fields[k]).includes("password"))
+      const hasEmail = Object.keys(fields).some(k => String(fields[k]).includes("email") || k === "email")
+      if (!hasPassword) checks.push({ ok: false, msg: `Auth model "${name}" has no password field` })
+      if (!hasEmail) checks.push({ ok: false, msg: `Auth model "${name}" has no email field` })
+    }
+    // Semantic: check for missing required fields on public create
+    if (policies.create === "*") {
+      const requiredFields = Object.entries(def.fields || {}).filter(([_, v]) => String(v).includes("required")).map(([k]) => k)
+      if (requiredFields.length > 5) {
+        checks.push({ ok: false, msg: `${name}.create is public but has ${requiredFields.length} required fields — may cause validation errors for anonymous users` })
+      }
+    }
+    // Semantic: scoped model without organization
+    if (def.scoped && !config.auth?.organization?.enabled) {
+      checks.push({ ok: false, msg: `${name} is scoped but organization is not enabled in auth` })
+    }
+    // Semantic: soft delete without timestamps
+    if (def.softDelete && !def.timestamps) {
+      checks.push({ ok: false, msg: `${name} has softDelete but no timestamps — add timestamps: true` })
+    }
+  }
+
+  // 9. Semantic: auth configured but no JWT_SECRET
+  if (config.auth && !process.env.JWT_SECRET) {
+    checks.push({ ok: false, msg: "JWT_SECRET not set — using dev default, not safe for production" })
+  }
+
+  // 10. Semantic: public routes without rate limiting
+  const hasPublicCreate = Object.entries(models).some(([_, m]) => (m as any).policies?.create === "*")
+  if (hasPublicCreate) {
+    checks.push({ ok: false, msg: "Some models have public create — consider rate limiting for production" })
+  }
+
+  // 11. Semantic: plugin references
+  const plugins = config.plugins || []
+  for (const p of plugins) {
+    const localPath = join(rootDir, "plugins", `${p}.ts`)
+    const npmPath = join(rootDir, "node_modules", p.startsWith("kai-plugin-") ? p : `kai-plugin-${p}`)
+    if (!existsSync(localPath) && !existsSync(npmPath)) {
+      checks.push({ ok: false, msg: `Plugin "${p}" not found at plugins/${p}.ts or node_modules/kai-plugin-${p}` })
+    }
+  }
+
+  // 12. Semantic: email configured but no provider handling
+  if (config.email?.provider === "sandbox" || config.email?.provider === "fake") {
+    checks.push({ ok: true, msg: "Email: fake provider — no real emails sent" })
   }
 
   // Print results

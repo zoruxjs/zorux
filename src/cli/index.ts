@@ -118,6 +118,15 @@ if (cmd === "new") {
 } else if (cmd === "ownership") {
   const { ownershipCommand } = await import("./ownership")
   await ownershipCommand(args)
+} else if (cmd === "token-report" || cmd === "tokens") {
+  const { tokenReportCommand } = await import("./token-report")
+  await tokenReportCommand(args)
+} else if (cmd === "snapshot") {
+  const { snapshotCommand } = await import("./snapshot")
+  await snapshotCommand(args)
+} else if (cmd === "cleanup") {
+  const { cleanupCommand } = await import("./cleanup")
+  await cleanupCommand(args)
 } else {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
@@ -135,6 +144,9 @@ if (cmd === "new") {
   console.log("  zorux diff")
   console.log("  zorux decisions")
   console.log("  zorux ownership <model|/route|field>")
+  console.log("  zorux token-report           📊 Token economy estimate")
+  console.log("  zorux snapshot               📸 Project state snapshot")
+  console.log("  zorux cleanup                🧹 Remove old reference names")
   console.log("  zorux add model <Name> <field>:<type> [flags...]")
   console.log("  zorux make action|job|migration <name>")
   console.log("  zorux seed [--count N]")
