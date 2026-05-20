@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from "fs"
+import { readFileSync, existsSync, readdirSync } from "fs"
 import { join } from "path"
 import { load } from "js-yaml"
 
@@ -139,6 +139,46 @@ export async function verifyCommand(args: string[]) {
   // 12. Semantic: email configured but no provider handling
   if (config.email?.provider === "sandbox" || config.email?.provider === "fake") {
     checks.push({ ok: true, msg: "Email: fake provider — no real emails sent" })
+  }
+
+  // 13. Strict mode checks
+  const strict = config.zorux?.strict === true
+  if (strict) {
+    checks.push({ ok: true, msg: "Strict mode enabled — additional quality gates active" })
+
+    // Package allowlist
+    const allowlist = config.packages?.allowed || []
+    if (allowlist.length > 0) {
+      const pkg = existsSync(join(rootDir, "package.json")) ? JSON.parse(readFileSync(join(rootDir, "package.json"), "utf-8")) : {}
+      const deps = { ...pkg.dependencies } || {}
+      for (const dep of Object.keys(deps)) {
+        if (!allowlist.includes(dep) && !dep.startsWith("zorux") && !["hono"].includes(dep)) {
+          checks.push({ ok: false, msg: `Package "${dep}" not in allowlist — add to packages.allowed in app.yaml` })
+        }
+      }
+    }
+
+    // Public routes must have security
+    for (const [name, m] of Object.entries(models)) {
+      const def = m as any
+      if (def.policies?.create === "*" || def.policies?.list === "*") {
+        checks.push({ ok: false, msg: `Strict: ${name} has public "${def.policies.create === "*" ? "create" : "list"}" — rate limit or security required` })
+      }
+    }
+
+    // Actions should have error handling
+    const actionsDir = join(rootDir, "actions")
+    if (existsSync(actionsDir)) {
+      for (const f of readdirSync(actionsDir).filter((f: string) => f.endsWith(".ts"))) {
+        const content = readFileSync(join(actionsDir, f), "utf-8")
+        if (content.includes("catch {}")) {
+          checks.push({ ok: false, msg: `Strict: actions/${f} has empty catch block` })
+        }
+        if (content.includes("any") && (content.match(/\bany\b/g) || []).length > 10) {
+          checks.push({ ok: false, msg: `Strict: actions/${f} uses "any" excessively` })
+        }
+      }
+    }
   }
 
   // Print results
