@@ -329,12 +329,11 @@ export function invalidateModelCache(cache: CacheAdapter, _modelTable: string): 
 }
 
 // ═══════════════════════════════════════════════════
-// Factory
-// ═══════════════════════════════════════════════════
-
-let currentCache: CacheAdapter = new MemoryCache()
+// Factory — lazy init
+let currentCache: CacheAdapter | null = null
 
 export function createCache(config?: { provider?: string; url?: string; ttl?: number }): CacheAdapter {
+  if (currentCache && !config) return currentCache
   const provider = config?.provider || "memory"
 
   switch (provider) {
@@ -385,12 +384,13 @@ export function createCache(config?: { provider?: string; url?: string; ttl?: nu
       break
     }
     default:
-      currentCache = new MemoryCache()
+      if (!currentCache) currentCache = new MemoryCache()
   }
 
   return currentCache
 }
 
 export function getCache(): CacheAdapter {
+  if (!currentCache) currentCache = new MemoryCache()
   return currentCache
 }

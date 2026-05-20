@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { load, dump } from 'js-yaml'
+import { load } from 'js-yaml'
 
 interface NewOptions {
   preset?: string
@@ -26,11 +26,21 @@ export async function newCommand(name: string, options: NewOptions) {
 
   // Load preset YAML
   const dir = import.meta.dir
-  const presetDir = existsSync(join(dir, '../../presets'))
-    ? join(dir, '../../presets')
-    : existsSync(join(dir, '../presets'))
-      ? join(dir, '../presets')
-      : join(process.cwd(), 'presets')
+  const searchPaths = [
+    join(dir, '../../presets'),
+    join(dir, '../presets'),
+    join(dir, 'presets'),
+    join(process.cwd(), 'presets'),
+    join(process.cwd(), 'node_modules/zorux/presets'),
+  ]
+  let presetDir = ''
+  for (const p of searchPaths) {
+    if (existsSync(p)) { presetDir = p; break }
+  }
+  if (!presetDir) {
+    console.error('[Zorux] Cannot find presets/. Tried:\n  ' + searchPaths.join('\n  '))
+    process.exit(1)
+  }
   const presetPath = join(presetDir, preset + '.yaml')
   const presetYaml = existsSync(presetPath)
     ? (load(readFileSync(presetPath, 'utf-8')) as any)
