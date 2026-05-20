@@ -92,6 +92,9 @@ export async function devCommand(options: { port?: string }) {
   }
 
   console.log(`\n  \u26A1 Zorux dev server`)
+  console.log(`  Source of truth: app.yaml`)
+  console.log(`  For agents: run zorux context`)
+  console.log(`  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`)
   console.log(`  Root: ${rootDir}`)
   console.log(`  Watching for file changes...`)
   console.log(`  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`)

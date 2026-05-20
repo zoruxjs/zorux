@@ -192,6 +192,14 @@ export async function contextCommand(args: string[]) {
     w(`- \`zorux db migrate\`      — Run migrations`)
     w(`- \`zorux seed\`            — Seed data`)
     w(`- \`zorux test\`            — Run tests`)
+    w(``)
+    w(`## Agent Instructions`)
+    w(`- Source of truth: \`app.yaml\``)
+    w(`- Prefer Zorux CLI over npm/npx`)
+    w(`- Do NOT hand-write CRUD, auth, or admin — they are auto-generated`)
+    w(`- Use \`plugins/*.ts\` for custom routes, \`actions/*.ts\` for custom handlers`)
+    w(`- Run \`zorux verify\` after any change to \`app.yaml\``)
+    w(`- Read \`AGENTS.md\` for full agent instructions`)
   }
 
   const content = lines.join("\n")

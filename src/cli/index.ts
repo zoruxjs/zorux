@@ -127,6 +127,27 @@ if (cmd === "new") {
 } else if (cmd === "cleanup") {
   const { cleanupCommand } = await import("./cleanup")
   await cleanupCommand(args)
+} else if (cmd === "agent" && args[1] === "init") {
+  const { agentInitCommand } = await import("./agent")
+  await agentInitCommand(args)
+} else if (cmd === "guard" && args[1] === "install") {
+  const { guardInstallCommand } = await import("./guard")
+  await guardInstallCommand()
+} else if (cmd === "lint" && args[1] === "agent") {
+  const { lintAgentCommand } = await import("./lint-agent")
+  await lintAgentCommand()
+} else if (cmd === "add" && args[1] === "field") {
+  const { addFieldCommand } = await import("./add-commands")
+  await addFieldCommand(args)
+} else if (cmd === "add" && args[1] === "page") {
+  const { addPageCommand } = await import("./add-commands")
+  await addPageCommand(args)
+} else if (cmd === "add" && args[1] === "package") {
+  const { addPackageCommand } = await import("./add-commands")
+  await addPackageCommand(args)
+} else if (cmd === "add" && args[1] === "plugin") {
+  const { addPluginCommand } = await import("./add-commands")
+  await addPluginCommand(args)
 } else {
   console.log("Zorux v" + getVersion() + " - AI-first web framework")
   console.log("")
@@ -147,6 +168,11 @@ if (cmd === "new") {
   console.log("  zorux token-report           📊 Token economy estimate")
   console.log("  zorux snapshot               📸 Project state snapshot")
   console.log("  zorux cleanup                🧹 Remove old reference names")
+  console.log("  zorux agent init             🤖 Generate agent instructions")
+  console.log("  zorux lint agent             🧹 Detect agent anti-patterns")
+  console.log("  zorux add field <m> <f>:<t>  ➕ Add field to model")
+  console.log("  zorux add page <name>        📄 Generate DaisyUI page")
+  console.log("  zorux add package <pkg>      📦 Install + register provider")
   console.log("  zorux add model <Name> <field>:<type> [flags...]")
   console.log("  zorux make action|job|migration <name>")
   console.log("  zorux seed [--count N]")

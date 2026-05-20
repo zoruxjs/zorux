@@ -49,8 +49,10 @@ export async function newCommand(name: string, options: NewOptions) {
   // Generate app.yaml
   writeFileSync(join(projectDir, 'app.yaml'), generateAppYaml(name, preset, presetYaml))
 
-  // Generate package.json
-  writeFileSync(join(projectDir, 'package.json'), JSON.stringify(generatePkg(name, options), null, 2))
+  // Generate package.json with Zorux metadata
+  const pkg = generatePkg(name, options)
+  pkg.zorux = { project: true, sourceOfTruth: "app.yaml", preferredCli: "zorux" }
+  writeFileSync(join(projectDir, 'package.json'), JSON.stringify(pkg, null, 2))
 
   // tsconfig
   writeFileSync(join(projectDir, 'tsconfig.json'), JSON.stringify({
@@ -94,6 +96,15 @@ export async function newCommand(name: string, options: NewOptions) {
       console.log("  - Mobile generation error:", err.message)
     }
   }
+
+  // Generate agent instructions
+  try {
+    const { agentInitCommand } = await import("./agent")
+    const originalCwd = process.cwd()
+    process.chdir(projectDir)
+    await agentInitCommand([])
+    process.chdir(originalCwd)
+  } catch {}  // non-fatal
 
   console.log('  ✅ Created ' + name + ' at ' + projectDir)
   console.log('\n  Next steps:')
