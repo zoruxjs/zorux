@@ -100,6 +100,9 @@ Your app is now running at `http://localhost:3000`:
 - **Admin**: `http://localhost:3000/admin`
 - **Swagger UI**: `http://localhost:3000/api/docs`
 - **WebSocket**: `ws://localhost:3000/ws`
+- **Forms**: `http://localhost:3000/forms/<name>` (if configured)
+
+Declarative forms can be added via `forms:` in `app.yaml` — see the [Forms Reference](forms.md) for details.
 
 ## Project Structure
 

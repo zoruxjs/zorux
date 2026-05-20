@@ -559,6 +559,35 @@ pluginConfig:
 | `my-plugin` | `plugins/my-plugin.ts` or `plugins/my-plugin/index.ts` |
 | `npm-package` | npm package `npm-package` (tries `zorux-plugin-npm-package` first, falls back to `kai-plugin-npm-package` for legacy compat) |
 
+### Forms
+
+Declare public HTML forms with validation, honeypot, and model integration.
+
+```yaml
+forms:
+  subscribe:
+    title: Newsletter
+    description: Subscribe to our newsletter
+    model: Subscriber
+    fields:
+      - email
+      - name
+    button: Subscribe
+    success:
+      message: "Thanks for subscribing!"
+    honeypot: true
+```
+
+Each form generates three routes:
+
+| Route | Description |
+|---|---|
+| `GET /forms/<name>` | DaisyUI form with field-level validation |
+| `POST /forms/<name>` | Submit handler (validates, saves via API) |
+| `GET /forms/<name>/success` | Confirmation page |
+
+See [Forms Reference](forms.md) for full configuration.
+
 ### Strict Mode
 
 Enable quality gates for production projects.

@@ -81,6 +81,22 @@ zorux dev [port]
 - `plugins/*.ts` — Local plugins
 - `locales/*.json` — Translation files
 - `views/` — Admin UI templates
+- `web/` — Public pages
+
+**Live Reload (Browser Auto-Refresh):**
+- Uses **EventSource** (`/__zorux_livereload`) to notify the browser
+- **`reload` event** — Full page reload on YAML/TS changes
+- **`css` event** — CSS-only refresh (no full page reload) for `.css` file changes
+- Script is auto-injected into all HTML responses in development mode
+- No browser extension needed — works out of the box
+
+**Polling fallback:** A 2-second file polling loop monitors `app.yaml`, `actions/`, `plugins/`, and `web/` as a fallback for platforms where `fs.watch` is unreliable (Docker, NFS, Windows在某些情况下).
+
+**Filters:** `.yaml`, `.yml`, `.ts`, `.js`, `.tsx`, `.jsx`, `.json`, `.css`
+
+**Ignores:** `node_modules`, `dist`
+
+**Debounce:** 300ms
 
 **Filters:** `.yaml`, `.yml`, `.ts`, `.js`, `.tsx`, `.jsx`, `.json`, `.css`
 

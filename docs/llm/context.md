@@ -106,6 +106,13 @@ email:
   provider: sandbox      # sandbox | resend | sendgrid | smtp
 realtime:
   enabled: true
+forms:
+  subscribe:
+    title: Newsletter
+    model: Subscriber
+    fields: [email, name]
+    button: Subscribe
+    honeypot: true
 plugins:
   - my-plugin
 ```
